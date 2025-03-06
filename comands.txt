@@ -1,0 +1,11 @@
+# skip tests
+mvn clean install -DskipTests
+
+# run tests
+mvn clean install
+
+# run tests with debug
+mvn clean install -Ddebug
+
+# run tests with debug and skip tests
+mvn clean install -Ddebug -DskipTests
