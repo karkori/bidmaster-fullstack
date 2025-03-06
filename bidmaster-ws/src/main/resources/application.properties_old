@@ -1,0 +1,28 @@
+# Configuración de la aplicación
+spring.application.name=bidmaster
+server.port=8080
+
+# Configuración R2DBC para PostgreSQL
+spring.r2dbc.url=r2dbc:postgresql://localhost:5432/bidmaster
+spring.r2dbc.username=postgres
+spring.r2dbc.password=postgres
+spring.r2dbc.pool.initial-size=5
+spring.r2dbc.pool.max-size=20
+
+# Configuración para Flyway (migraciones de base de datos)
+spring.flyway.url=jdbc:postgresql://localhost:5432/bidmaster
+spring.flyway.user=postgres
+spring.flyway.password=postgres
+spring.flyway.baseline-on-migrate=true
+
+# Configuración de logging
+logging.level.org.springframework.r2dbc=DEBUG
+logging.level.io.r2dbc.postgresql=DEBUG
+logging.level.dev.mostapha.bidmaster=DEBUG
+
+# Habilita la consola H2 para desarrollo (solo para H2)
+# spring.h2.console.enabled=true
+# spring.h2.console.path=/h2-console
+
+# Configuración para el perfil de test
+# spring.profiles.active=test

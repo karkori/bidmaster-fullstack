@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-BidMasterApplication<bidmaster>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "dev.mostapha.bidmaster.BidMasterApplication",
+            "projectName": "bidmaster",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}

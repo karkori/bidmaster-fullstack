@@ -9,3 +9,12 @@ mvn clean install -Ddebug
 
 # run tests with debug and skip tests
 mvn clean install -Ddebug -DskipTests
+
+# run app with clean
+mvn clean spring-boot:run
+
+# kill process on port 41293
+sudo kill -9 $(sudo lsof -t -i:41293)
+
+# docker compose force clean
+docker compose down --volumes

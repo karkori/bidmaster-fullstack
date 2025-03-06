@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: BidMaster
+  r2dbc:
+    url: r2dbc:h2:mem:///testdb?options=DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+  flyway:
+    enabled: false
+
+logging:
+  level:
+    springframework:
+      data:
+        r2dbc: DEBUG
