@@ -2,6 +2,7 @@ package dev.mostapha.bidmaster.infrastructure.persistence.repositories;
 
 import java.util.UUID;
 
+import org.springframework.data.r2dbc.repository.Modifying;
 import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 
@@ -57,4 +58,16 @@ public interface InfraUserRepository extends ReactiveCrudRepository<UserEntity, 
      */
     @Query("UPDATE users SET failed_login_attempts = 0 WHERE id = :id")
     Mono<Void> resetFailedLoginAttempts(UUID id);
+    
+    /**
+     * Insertar un usuario explícitamente, independientemente de si ya tiene un ID asignado
+     */
+    @Modifying
+    @Query("INSERT INTO users (id, username, email, password, first_name, last_name, phone, address, status, role, "+
+           "last_login, failed_login_attempts, balance, blocked_balance, reputation, created_at, updated_at, version) "+
+           "VALUES (:#{#user.id}, :#{#user.username}, :#{#user.email}, :#{#user.password}, :#{#user.firstName}, "+
+           ":#{#user.lastName}, :#{#user.phone}, :#{#user.address}, :#{#user.status}, :#{#user.role}, "+
+           ":#{#user.lastLogin}, :#{#user.failedLoginAttempts}, :#{#user.balance}, :#{#user.blockedBalance}, "+
+           ":#{#user.reputation}, :#{#user.createdAt}, :#{#user.updatedAt}, :#{#user.version})")
+    Mono<Void> insertUser(UserEntity user);
 }

@@ -102,7 +102,8 @@ public class UserEntity {
     @Column("updated_at")
     private LocalDateTime updatedAt;
     
-    @Version
+    // Temporalmente desactivamos el control de versión para resolver el problema de creación
+    // @Version
     @Column("version")
     private Long version;
 }

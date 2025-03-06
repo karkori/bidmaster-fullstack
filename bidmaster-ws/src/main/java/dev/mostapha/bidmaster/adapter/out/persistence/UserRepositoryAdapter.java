@@ -37,7 +37,20 @@ public class UserRepositoryAdapter implements UserRepository {
     public Mono<User> save(User user) {
         return Mono.just(user)
                 .map(this::mapToEntity)
-                .flatMap(userRepository::save)
+                .flatMap(entity -> {
+                    // Verificamos si es un nuevo usuario o una actualización
+                    // Si createdAt y updatedAt son iguales o cercanos, probablemente es un nuevo usuario
+                    if (entity.getCreatedAt() != null && entity.getUpdatedAt() != null &&
+                        Math.abs(entity.getCreatedAt().toEpochSecond(java.time.ZoneOffset.UTC) - 
+                                entity.getUpdatedAt().toEpochSecond(java.time.ZoneOffset.UTC)) < 10) {
+                        // Es un nuevo usuario, usamos inserción explícita
+                        return userRepository.insertUser(entity)
+                                .then(Mono.just(entity));
+                    } else {
+                        // Es una actualización, usamos el método save estándar
+                        return userRepository.save(entity);
+                    }
+                })
                 .map(this::mapToDomain);
     }
 

@@ -16,6 +16,14 @@ spring:
     password: postgres
     baseline-on-migrate: true
     enabled: true
+    clean-disabled: false     # Permite la limpieza de la base de datos
+    clean-on-validation-error: true  # Limpia si hay errores de validación
+    # clean: true              # Ejecuta flyway:clean al inicio
+    locations: classpath:db/migration # Ubicación de los scripts de migración
+
+  sql:
+    init:
+      mode: always
 
 # Configuración de logging
 logging:

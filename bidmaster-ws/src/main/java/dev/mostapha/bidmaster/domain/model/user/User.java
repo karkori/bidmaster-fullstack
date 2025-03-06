@@ -54,6 +54,7 @@ public class User {
         this.reputation = 50; // Reputación inicial
         this.createdAt = LocalDateTime.now();
         this.updatedAt = this.createdAt;
+        this.version = 0L; // Inicializar versión para nuevos usuarios
     }
     
     /**
