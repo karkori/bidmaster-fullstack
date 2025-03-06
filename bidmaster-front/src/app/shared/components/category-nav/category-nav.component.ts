@@ -14,14 +14,14 @@ interface Category {
   standalone: true,
   imports: [CommonModule, RouterLink],
   template: `
-    <nav class="border-b bg-white shadow-sm">
+    <nav class="border-b border-gray-200 bg-white shadow-sm">
       <div class="container mx-auto px-4">
         <div class="flex h-12 items-center space-x-8">
           <!-- Menú de todas las categorías -->
-          <div class="relative">
+          <div class="relative" (mouseleave)="isMenuOpen.set(false)">
             <button
-              (click)="toggleMenu()"
-              class="flex items-center space-x-2 rounded-md px-3 py-2 text-gray-700 hover:bg-gray-100"
+              (mouseenter)="isMenuOpen.set(true)"
+              class="flex items-center space-x-2 rounded-md px-3 py-2 text-gray-700 transition-colors hover:bg-gray-50 hover:text-blue-600"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -41,17 +41,23 @@ interface Category {
             </button>
 
             @if (isMenuOpen()) {
-              <div
-                class="absolute left-0 top-full z-50 mt-1 w-64 rounded-md border bg-white py-1 shadow-lg"
-              >
-                @for (category of categories(); track category.id) {
-                  <a
-                    [routerLink]="['/category', category.slug]"
-                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    {{ category.name }}
-                  </a>
-                }
+              <div class="absolute left-0 top-[calc(100%-0.25rem)] z-50">
+                <!-- Área invisible para el hover -->
+                <div class="h-2 w-full"></div>
+                <!-- Menú real -->
+                <div class="w-72 rounded-md border border-gray-200 bg-white py-2 shadow-lg">
+                  @for (category of categories(); track category.id) {
+                    <a
+                      [routerLink]="['/category', category.slug]"
+                      class="flex items-center px-6 py-3 text-base text-gray-700 transition-colors hover:bg-gray-50 hover:text-blue-600"
+                    >
+                      {{ category.name }}
+                    </a>
+                    @if (!$last) {
+                      <div class="mx-4 h-px bg-gray-100"></div>
+                    }
+                  }
+                </div>
               </div>
             }
           </div>
@@ -61,7 +67,7 @@ interface Category {
             @for (category of featuredCategories(); track category.id) {
               <a
                 [routerLink]="['/category', category.slug]"
-                class="whitespace-nowrap text-sm font-medium text-gray-700 hover:text-blue-600"
+                class="whitespace-nowrap text-sm font-medium text-gray-700 transition-colors hover:text-blue-600"
               >
                 {{ category.name }}
               </a>
@@ -91,8 +97,4 @@ export class CategoryNavComponent {
     this.allCategories.filter(cat => cat.featured)
   );
   isMenuOpen = signal(false);
-
-  toggleMenu() {
-    this.isMenuOpen.update(value => !value);
-  }
 }

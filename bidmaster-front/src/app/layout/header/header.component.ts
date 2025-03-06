@@ -11,10 +11,10 @@ import { AuthButtonComponent } from '../../shared/components/auth-button/auth-bu
   template: `
     <header class="bg-white shadow">
       <div class="container mx-auto px-4">
-        <div class="flex h-16 items-center justify-between">
+        <div class="flex h-20 items-center justify-between">
           <!-- Logo -->
           <a routerLink="/" class="flex items-center space-x-2">
-            <img src="/logo.svg" alt="BidMaster" class="h-8 w-auto" />
+            <img src="/logo.svg" alt="BidMaster" class="h-10 w-auto" />
             <span class="hidden text-xl font-bold text-blue-900 sm:block">BidMaster</span>
           </a>
 

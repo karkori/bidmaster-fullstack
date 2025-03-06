@@ -11,6 +11,7 @@ import { CategoryNavComponent } from '../../shared/components/category-nav/categ
   template: `
     <div class="min-h-screen bg-gray-50">
       <app-header />
+      <div class="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
       <app-category-nav />
       <main class="container mx-auto px-4 py-6">
         <router-outlet />
