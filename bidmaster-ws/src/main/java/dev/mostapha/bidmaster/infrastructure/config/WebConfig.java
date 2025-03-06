@@ -1,4 +1,4 @@
-package dev.mostapha.bidmaster.config;
+package dev.mostapha.bidmaster.infrastructure.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.reactive.config.CorsRegistry;
