@@ -55,6 +55,15 @@ public class UserRepositoryAdapter implements UserRepository {
     }
 
     @Override
+    public Mono<User> updateUser(User user) {
+        return Mono.just(user)
+                .map(this::mapToEntity)
+                .flatMap(entity -> userRepository.updateUser(entity)
+                        .then(userRepository.findById(entity.getId())))
+                .map(this::mapToDomain);
+    }
+
+    @Override
     public Mono<User> findById(UUID id) {
         return userRepository.findById(id)
                 .map(this::mapToDomain);

@@ -1,12 +1,11 @@
 package dev.mostapha.bidmaster.application.port.out;
 
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-
 import java.util.UUID;
 
 import dev.mostapha.bidmaster.domain.model.user.User;
 import dev.mostapha.bidmaster.domain.model.user.UserStatus;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 /**
  * Puerto del repositorio de usuarios.
@@ -21,6 +20,13 @@ public interface UserRepository {
      * @return El usuario guardado
      */
     Mono<User> save(User user);
+
+    /**
+     * Actualiza un usuario en el repositorio
+     * @param user Usuario a actualizar
+     * @return Mono que completa cuando se ha actualizado
+     */
+    Mono<User> updateUser(User user);
     
     /**
      * Busca un usuario por su ID

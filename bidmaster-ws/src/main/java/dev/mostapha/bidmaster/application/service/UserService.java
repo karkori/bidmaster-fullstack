@@ -216,11 +216,11 @@ public class UserService implements UserUseCase {
                     if (user.isValidPassword(password)) {
                         // Registramos el login exitoso
                         user.recordSuccessfulLogin();
-                        return userRepository.save(user);
+                        return userRepository.updateUser(user);
                     } else {
                         // Registramos el intento fallido de login
                         user.incrementFailedLogins();
-                        userRepository.save(user).subscribe(); // Guardar en segundo plano
+                        userRepository.updateUser(user).subscribe(); // Guardar en segundo plano
                         return Mono.error(new IllegalArgumentException("Contraseña incorrecta"));
                     }
                 });
