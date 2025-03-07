@@ -4,6 +4,19 @@ Este documento establece las directrices y estándares para el desarrollo del fr
 
 ## Arquitectura y Estructura de Componentes
 
+### Organización de Componentes
+Para una mejor organización y mantenimiento, los componentes deben clasificarse en:
+
+- **Componentes específicos de página**: ubicados en `app/components/`
+  - Solo se utilizan dentro de una página o sección específica
+  - No deben reutilizarse en otras partes de la aplicación
+  - Pueden organizarse por dominio: `components/dashboard/auction-form/`
+
+- **Componentes compartidos**: ubicados en `app/shared/components/`
+  - Reutilizables en cualquier parte de la aplicación
+  - Deben tener una API clara y documentada
+  - Ejemplos: botones, campos de formulario, modales, tablas
+
 ### Separación de Plantillas HTML y Lógica TypeScript
 Se debe separar las plantillas HTML en archivos independientes de los componentes TypeScript para:
 - Mejorar la legibilidad del código
@@ -156,6 +169,76 @@ bun add zod @angular/material
 npm install zod @angular/material
 ```
 
+### Formularios y Validación
+
+### Componentes de Formulario Reutilizables
+Crear componentes reutilizables para los elementos de formulario comunes:
+
+- **InputFieldComponent**: Para campos de texto, número, email, etc.
+- **TextareaFieldComponent**: Para texto multilínea
+- **SelectFieldComponent**: Para menús desplegables
+- **CheckboxFieldComponent**: Para casillas de verificación
+- **FormGroupComponent**: Para agrupar campos relacionados
+
+#### Implementación de ControlValueAccessor
+Los componentes de formulario deben implementar ControlValueAccessor para integrarse correctamente con Angular Reactive Forms:
+
+```typescript
+@Component({
+  selector: 'app-input-field',
+  templateUrl: './input-field.component.html',
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => InputFieldComponent),
+      multi: true
+    }
+  ]
+})
+export class InputFieldComponent implements ControlValueAccessor {
+  @Input() label: string = '';
+  @Input() required: boolean = false;
+  @Input() errorMessage: string = '';
+  
+  value: any = '';
+  disabled: boolean = false;
+  onChange = (value: any) => {};
+  onTouched = () => {};
+  
+  writeValue(value: any): void { this.value = value; }
+  registerOnChange(fn: any): void { this.onChange = fn; }
+  registerOnTouched(fn: any): void { this.onTouched = fn; }
+  setDisabledState(isDisabled: boolean): void { this.disabled = isDisabled; }
+}
+```
+
+### Formularios reactivos con arrays dinámicos
+Para interfaces que requieren generar elementos dinámicamente (como sidebar, menús, etc.):
+
+```typescript
+// Definir interfaz para los items
+interface SidebarItem {
+  label: string;
+  route: string;
+  icon: string;
+  requiresAdmin?: boolean;
+}
+
+// Crear array de items
+sidebarItems: SidebarItem[] = [
+  { label: 'Mi Perfil', route: '/dashboard/profile', icon: 'user' },
+  { label: 'Mis Pujas', route: '/dashboard/bids', icon: 'hammer' }
+];
+
+// En el template, usar @for para generar el contenido
+@for (item of sidebarItems; track item.route) {
+  <a [routerLink]="item.route" class="sidebar-item">
+    <svg-icon [name]="item.icon"></svg-icon>
+    {{ item.label }}
+  </a>
+}
+```
+
 ### Validación de Formularios
 - Usar Zod para la validación de esquemas y formularios
 - Integrar Zod con Reactive Forms para tener un sistema de validación robusto
@@ -185,6 +268,25 @@ validateFormWithZod() {
 - Usar signals en lugar de observables para mejorar el rendimiento
 - Implementar estrategias de memorización con `computed()` para cálculos costosos
 - Usar `@defer` en plantillas para componentes pesados que puedan cargarse de forma diferida
+- Utilizar `position: sticky` en lugar de `position: absolute` para elementos de navegación o sidebar que deban mantener su posición durante el scroll
+- Cuando se desarrollen layouts complejos, preferir flexbox para una mejor gestión del espacio y responsive design
+
+## Estilos y UI
+
+### Diseño de Formularios
+- Mantener una estética consistente en todos los formularios
+- Usar componentes reutilizables para mantener la coherencia visual
+- Proporcionar retroalimentación clara sobre errores de validación
+- Agrupar campos relacionados visualmente (usando `FormGroupComponent`)
+- Incluir instrucciones o textos de ayuda cuando sea necesario
+
+### Responsive Design
+- Diseñar pensando primero en dispositivos móviles (mobile-first)
+- Utilizar las utilidades de Tailwind para adaptar la interfaz a diferentes tamaños de pantalla:
+  ```html
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+  ```
+- Probar la interfaz en múltiples dispositivos y tamaños de pantalla
 
 ---
 

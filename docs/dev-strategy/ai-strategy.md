@@ -1,115 +1,189 @@
-# 🧠 Estrategia de Desarrollo con IA
+# 🧠 Documentación Principal sobre la Estrategia de Desarrollo del Proyecto BidMaster
 
 ## 🎯 Introducción
-Este documento describe la estrategia utilizada para desarrollar este proyecto con asistencia de inteligencia artificial, con el objetivo de servir como framework para futuros proyectos.
 
-## 🛠️ Metodología
+Este documento sirve como punto central de referencia para el proyecto [ **BidMaster, una plataforma de subastas online** ]. Aquí encontrarás información general sobre la estructura del proyecto, estrategias de desarrollo, y referencias a documentación más específica. Aunque puede servir como documentación al usuario/desarrollador, mi objetivo principal con ella es para guiar a los agente de IA para entender rapidamente el contexto y la aquitectura del proyecto.
 
-### 1. **Definición de Objetivos**
-- **Prompt Ejemplo**: "Define los objetivos principales del proyecto [Nombre del Proyecto], incluyendo funcionalidades clave, usuarios objetivo y métricas de éxito."
 
-### 2. **Arquitectura del Proyecto**
-- **Prompt Ejemplo**: "Crea una estructura de carpetas inicial para un proyecto [Tipo de Proyecto] que incluya [Tecnologías Clave]."
-- **Documentación de Estructura**: "Utiliza el comando `tree` para generar y mantener actualizada la estructura de directorios del proyecto, excluyendo directorios innecesarios como node_modules, .git, etc."
+## 📑 Documentación del Proyecto
+
+El proyecto cuenta con varios documentos específicos que detallan las mejores prácticas y estándares para cada parte del sistema:
+
+### 📚 Guías Específicas
+
+1. **[Angular Best Practices](angular_best_practices.md)** - Guía para el desarrollo frontend con Angular 19
+
+   - Estructura de componentes y organización del código
+   - Componentes reutilizables y formularios
+   - Gestión de estado y reactividad con signals
+   - Optimización y rendimiento
+   - etc.
+
+2. **[Spring Boot Best Practices](springboot_best_practices.md)** - Guía para el desarrollo backend con Spring Boot 3
+
+   - Arquitectura hexagonal (ports and adapters)
+   - Estructura de paquetes y organización del código
+   - Implementación de casos de uso y repositorios
+   - Seguridad y validación
+
+3. **[Estructura del Proyecto](tree.md)** - Estructura actualizada de directorios y archivos
+   - Organización de directorios frontend y backend
+   - Visualización jerárquica del proyecto
+
+## 🛠️ Estructura del Proyecto
+
+El proyecto sigue una arquitectura full-stack claramente dividida:
+
+### Backend (Spring Boot 3)
+
+- Arquitectura hexagonal (ports and adapters)
+- API RESTful para comunicación con el frontend
+- Seguridad con JWT
+- Base de datos PostgreSQL
+
+### Frontend (Angular 19)
+
+- Componentes standalone
+- Sistema modular con lazy loading
+- Gestión de estado reactivo con signals
+- UI moderna con Tailwind CSS
+
+## 📊 Comandos Útiles
+
+### Generación de Estructura de Directorios
+
+Para mantener actualizada la documentación de la estructura del proyecto, utiliza el siguiente comando:
 
 ```bash
-tree -I "node_modules|.git|.angular|.idea|dist|.vscode|target|build" -L 15 /home/mustafa/CascadeProjects/fullstack-demo > /home/mustafa/CascadeProjects/fullstack-demo/docs/dev-strategy/tree_raw.md
+tree -I "node_modules|.git|.angular|.idea|dist|.vscode|target|build" -L 15 /home/mustafa/CascadeProjects/fullstack-demo > /home/mustafa/CascadeProjects/fullstack-demo/docs/dev-strategy/tree.md
 ```
 
-### 3. **Documentación de Dominio**
-- **Prompt Ejemplo**: "Genera la documentación inicial para las entidades, reglas y estados del dominio [Nombre del Dominio]."
+### Navegación Rápida
 
-### 4. **Implementación de Código**
-- **Prompt Ejemplo**: "Implementa la clase [Nombre de la Clase] en [Lenguaje] que cumpla con los siguientes requisitos: [Lista de Requisitos]."
+```bash
+# Frontend
+cd /home/mustafa/CascadeProjects/fullstack-demo/bidmaster-front
 
-### 5. **Revisión y Refinamiento**
-- **Prompt Ejemplo**: "Revisa el siguiente código y sugiere mejoras de optimización, legibilidad y buenas prácticas: [Código]."
+# Backend
+cd /home/mustafa/CascadeProjects/fullstack-demo/bidmaster-api
 
-## 🔍 Ejemplos de Prompts
+# Documentación de estrategias de desarrollo
+cd /home/mustafa/CascadeProjects/fullstack-demo/docs/dev-strategy
 
-### Para Crear Entidades
-```
-Crea la documentación de la entidad [Nombre de la Entidad] incluyendo atributos, relaciones y comportamientos principales.
-```
-
-### Para Definir Reglas de Negocio
-```
-Documenta las reglas de negocio para [Nombre del Dominio], incluyendo validaciones, restricciones y acciones permitidas.
+# Documentación de arquitectura y dominio
+cd /home/mustafa/CascadeProjects/fullstack-demo/docs/architecture
 ```
 
-### Para Generar Código
+## 📚 Documentación de Arquitectura y Dominio
+
+La documentación detallada sobre el modelo de dominio, entidades, reglas de negocio y estados del sistema se encuentra en el directorio de arquitectura:
+
 ```
-Implementa el endpoint [Nombre del Endpoint] en [Lenguaje/Framework] que cumpla con la siguiente especificación: [Detalles].
+/docs/architecture/
 ```
 
-## 📚 Framework para Nuevos Proyectos
+### Documentos Principales
 
-### 1. **Inicialización**
-- Definir objetivos y alcance
-- Crear estructura de carpetas
-- Documentar estructura con `tree` para referencia
+- **Modelo de Dominio**: [`/docs/architecture/domain-model.md`](/docs/architecture/domain-model.md)
 
-### 2. **Diseño**
-- Documentar dominio
-- Definir arquitectura
+  - Descripción general de todas las entidades y sus relaciones
+  - Invariantes del sistema
 
-### 3. **Implementación**
-- Generar código base
-- Implementar funcionalidades
+- **Entidades**: [`/docs/architecture/domain/entities/`](/docs/architecture/domain/entities/)
 
-### 4. **Revisión**
-- Optimizar código
-- Documentar decisiones
+  - Documentación detallada de cada entidad del sistema
+  - Atributos, comportamientos y validaciones
+
+- **Reglas de Negocio**: [`/docs/architecture/domain/rules/`](/docs/architecture/domain/rules/)
+
+  - Reglas específicas para usuarios, subastas, productos, etc.
+  - Políticas de seguridad y administración
+
+- **Estados y Transiciones**: [`/docs/architecture/domain/states/`](/docs/architecture/domain/states/)
+  - Diagramas de estado para entidades clave
+  - Reglas de transición entre estados
+
+> **Nota**: Al modificar cualquier aspecto del dominio o lógica de negocio, actualizar la documentación correspondiente en estos directorios.
+
+## 📝 Estrategias de Desarrollo
+
+### Prompts Útiles para IA
+
+#### Para Crear/Modificar Funcionalidades
+
+```
+Implementa la funcionalidad de [Nombre] que permita [Objetivo] utilizando [Tecnología] y siguiendo las mejores prácticas documentadas en [Referencia a Documento].
+```
+
+#### Para Análisis y Mejoras
+
+```
+Analiza el código en [Ruta del Archivo] y sugiere mejoras para optimizar [Rendimiento/Seguridad/Mantenibilidad] siguiendo nuestras mejores prácticas.
+```
+
+#### Para Debugging
+
+```
+Estoy recibiendo el siguiente error: [Mensaje de Error]. El problema ocurre en [Ruta del Archivo] cuando [Descripción del Contexto]. ¿Cuál podría ser la causa y cómo puedo solucionarlo?
+```
 
 ## 💡 Mejores Prácticas
 
 ### Para Prompts Efectivos
+
 - Ser específico y claro
 - Proporcionar contexto
 - Definir el formato esperado
 
 ### Para Estructura y Organización de Código
-- **Templates separados**: Siempre implementar los templates Angular en archivos HTML separados (`.component.html`) en lugar de templates inline
-- **Arquitectura por capas**: Seguir una clara separación de responsabilidades entre componentes, servicios y modelos
-- **Componentes standalone**: Preferir componentes Angular standalone para mejorar la modularidad y los tiempos de compilación
-- **Aliases de módulos**: Utilizar los aliases definidos en tsconfig.json para mejorar la legibilidad y mantenimiento de las importaciones:
-  ```typescript
-  // Aliases configurados en tsconfig.json
-  "@components/*" : ["app/components/*"]
-  "@pages/*" : ["app/pages/*"]
-  "@layouts/*" : ["app/layouts/*"]
-  "@core/*" : ["app/core/*"]
-  "@shared/*" : ["app/shared/*"]
-  "@environments/*" : ["environments/*"]
-  ```
 
-  Ejemplo de uso:
-  ```typescript
-  // En lugar de usar rutas relativas complicadas
-  import { SomeComponent } from '../../../shared/components/some.component';
-  
-  // Usar aliases para importaciones más limpias y mantenibles
-  import { SomeComponent } from '@shared/components/some.component';
-  ```
+Para detalles específicos sobre la estructura y organización del código, consultar las guías específicas:
+
+- **Frontend**: Todas las directrices para Angular se encuentran en [Angular Best Practices](angular_best_practices.md)
+
+- **Backend**: Las directrices para Spring Boot están en [Spring Boot Best Practices](springboot_best_practices.md)
+
+
 
 ### Para Documentación de Estructura
+
 - Mantener actualizada la estructura del proyecto con `tree` para mejorar el contexto
 - Excluir directorios irrelevantes (node_modules, .git, etc.) para mayor claridad
 - Separar las estructuras de frontend y backend para facilitar la comprensión
 - Documentar componentes pendientes de implementar para seguimiento
 
 ### Para Colaboración con IA
+
 - Revisar y validar resultados
 - Iterar y refinar
 - Documentar aprendizajes
 
-## 🔗 Recursos
+## 🚀 Roadmap del Proyecto
 
-### Plantillas de Prompts
-- [Plantilla para Entidades](templates/entity-prompt.md)
-- [Plantilla para Reglas](templates/rule-prompt.md)
-- [Plantilla para Código](templates/code-prompt.md)
+### Fase 1: Fundamentos
 
-### Ejemplos
-- [Ejemplo de Proyecto](examples/sample-project.md)
-- [Flujo de Trabajo](examples/workflow.md)
+- ✅ Configuración del proyecto frontend y backend
+- ✅ Implementación de autenticación y autorización
+- ✅ Estructura básica de la UI con dashboard y layout
+- ✅ Implementación de modelos de dominio básicos
+
+### Fase 2: Funcionalidades Core
+
+- ✅ Creación y gestión de subastas
+- ✅ Sistema de pujas y ofertas
+- ⏳ Notificaciones en tiempo real
+- ⏳ Sistema de búsqueda y filtros
+
+### Fase 3: Optimización y Expansión
+
+- ⏳ Mejoras de rendimiento y UX
+- ⏳ Sistema de valoraciones y comentarios
+- ⏳ Integración con pasarelas de pago
+- ⏳ App móvil (fuera del alcance inicial)
+
+## 🔗 Enlaces Útiles
+
+- [Angular.io](https://angular.io/docs) - Documentación oficial de Angular
+- [Spring.io](https://spring.io/projects/spring-boot) - Documentación oficial de Spring Boot
+- [Tailwind CSS](https://tailwindcss.com/docs) - Documentación oficial de Tailwind CSS
+- [JWT.io](https://jwt.io/) - Información sobre JSON Web Tokens
