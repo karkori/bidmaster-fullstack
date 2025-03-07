@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Router, RouterOutlet } from '@angular/router';
 import { HeaderComponent } from '@layouts/header/header.component';
 import { CategoryNavComponent } from '@shared/components/category-nav/category-nav.component';
 
@@ -13,10 +13,21 @@ import { CategoryNavComponent } from '@shared/components/category-nav/category-n
       <app-header />
       <div class="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
       <app-category-nav />
-      <main class="container mx-auto px-4 py-6">
+      
+      <!-- Ajuste dinámico de clases para evitar problemas en el Dashboard -->
+      <main [class.container]="!isDashboard" [class.mx-auto]="!isDashboard" class="">
         <router-outlet />
       </main>
     </div>
   `,
 })
-export class MainLayoutComponent {}
+export class MainLayoutComponent {
+  isDashboard = false;
+
+  constructor(private router: Router) {
+    // Detecta si la ruta actual pertenece al dashboard
+    this.router.events.subscribe(() => {
+      this.isDashboard = this.router.url.startsWith('/dashboard');
+    });
+  }
+}

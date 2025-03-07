@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { User } from '@shared/models/user.model';
 import { environment } from '@environments/environment';
+import { isPlatformBrowser } from '@angular/common';
 
 @Injectable({
   providedIn: 'root'
@@ -21,11 +22,18 @@ export class AuthService {
   
   private apiUrl = `${environment.apiUrl}/users`;
   
+  private isBrowser: boolean;
+
   constructor(private http: HttpClient) {
-    // Intentar recuperar el usuario del localStorage al iniciar
-    const storedUser = localStorage.getItem('currentUser');
-    if (storedUser) {
-      this.currentUserSignal.set(JSON.parse(storedUser));
+    // Verificar si estamos en un navegador
+    this.isBrowser = typeof window !== 'undefined';
+    
+    // Intentar recuperar el usuario del localStorage al iniciar (solo en navegador)
+    if (this.isBrowser) {
+      const storedUser = localStorage.getItem('currentUser');
+      if (storedUser) {
+        this.currentUserSignal.set(JSON.parse(storedUser));
+      }
     }
   }
   
@@ -41,16 +49,20 @@ export class AuthService {
   login(credentials: { username: string; password: string }): Observable<User> {
     return this.http.post<User>(`${this.apiUrl}/login`, credentials).pipe(
       tap(user => {
-        // Guardar usuario en localStorage y actualizar el signal
-        localStorage.setItem('currentUser', JSON.stringify(user));
+        // Guardar usuario en localStorage (solo en navegador) y actualizar el signal
+        if (this.isBrowser) {
+          localStorage.setItem('currentUser', JSON.stringify(user));
+        }
         this.currentUserSignal.set(user);
       })
     );
   }
   
   logout(): void {
-    // Eliminar usuario del localStorage y actualizar el signal
-    localStorage.removeItem('currentUser');
+    // Eliminar usuario del localStorage (solo en navegador) y actualizar el signal
+    if (this.isBrowser) {
+      localStorage.removeItem('currentUser');
+    }
     this.currentUserSignal.set(null);
   }
   
