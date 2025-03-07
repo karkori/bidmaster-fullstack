@@ -18,7 +18,7 @@ PROJECT_DIR=$(shell pwd)
 PORT_BACKEND=8080
 PORT_FRONTEND=4200
 
-# Ayuda
+# Comando principal para mostrar todos los comandos disponibles con descripciones
 .PHONY: help
 help:
 	@echo "${BLUE}BidMaster Project - Comandos Disponibles${NC}"
@@ -174,7 +174,9 @@ update-docs:
 	@echo "${BLUE}📚 Actualizando documentación de estructura...${NC}"
 	@make tree > $(DOCS_DIR)/dev-strategy/tree.md
 	@echo "${GREEN}✅ Documentación actualizada${NC}"
+# Genera un árbol de la estructura del proyecto, excluyendo directorios específicos
 tree:
+	@echo "${BLUE}📂 Generando árbol de la estructura del proyecto...${NC}"
 	@tree -I "node_modules|.git|.angular|.idea|dist|.vscode|target|build" -L 15 $(PROJECT_DIR)
 	
 view-docs:
@@ -192,7 +194,7 @@ kill-port:
 	@echo "${BLUE}🔪 Matando proceso en puerto $(PORT)...${NC}"
 	@lsof -ti:$(PORT) | xargs kill -9 2>/dev/null || echo "${YELLOW}No hay procesos en el puerto $(PORT)${NC}"
 
-# Más utilidades para el AI
+# Utilidades para IA y desarrollo
 .PHONY: ai-help dev-logs check-structure generate-component
 
 ai-help:
@@ -212,12 +214,16 @@ ai-help:
 	@echo "    - COMP_TYPE: Tipo (component|service|directive|pipe)"
 	@echo ""
 
+# Muestra la estructura de directorios del frontend y backend, útil para entender la organización
 check-structure:
 	@echo "${BLUE}📁 Estructura básica del proyecto${NC}"
+	@echo "${YELLOW}Estructura del frontend:${NC}"
 	@find $(FRONTEND_DIR)/src/app -type d -not -path "*/node_modules/*" -not -path "*/\.*" | sort
-	@echo "${BLUE}📁 Estructura del backend${NC}"
+	@echo "${YELLOW}Estructura del backend:${NC}"
 	@find $(BACKEND_DIR)/src -type d -not -path "*/\.*" | sort
 
+# Genera un nuevo componente Angular con la estructura correcta siguiendo las mejores prácticas
+# Uso: make generate-component COMP_NAME=nombre COMP_TYPE=tipo
 generate-component:
 	@if [ -z "$(COMP_NAME)" ]; then \
 		echo "${RED}❌ Debes especificar un nombre: make generate-component COMP_NAME=nombre COMP_TYPE=tipo${NC}"; \
@@ -227,9 +233,29 @@ generate-component:
 	echo "${BLUE}🔨 Generando $$COMP_TYPE_VALUE: $(COMP_NAME)...${NC}"; \
 	cd $(FRONTEND_DIR) && ng generate $$COMP_TYPE_VALUE $(COMP_NAME) --standalone
 
+# Muestra los últimos logs de desarrollo tanto del frontend como del backend
 dev-logs:
 	@echo "${BLUE}📋 Mostrando logs de desarrollo...${NC}"
 	@echo "${YELLOW}Logs del frontend:${NC}"
 	@tail -n 20 $(FRONTEND_DIR)/npm-debug.log 2>/dev/null || echo "No hay logs del frontend"
 	@echo "${YELLOW}Logs del backend:${NC}"
 	@tail -n 20 $(BACKEND_DIR)/logs/spring.log 2>/dev/null || echo "No hay logs del backend"
+
+# Comandos para poner el agente de IA en contexto con información del proyecto
+.PHONY: ai-context
+
+# Proporciona contexto del proyecto para agentes de IA, guiándolos a la documentación principal
+ai-context:
+	@echo "${BLUE}🤖 Contexto del Proyecto BidMaster para Agentes IA${NC}"
+	@echo ""
+	@echo "Hemos trabajado juntos en este proyecto y logrado grandes avances, pero quiero asegurarnos de que comprendas el contexto nuevamente para mantener la agilidad y evitar dificultades en el desarrollo."
+	@echo ""
+	@echo "Para ello, revisa detenidamente el documento docs/dev-strategy/ai-strategy.md. Este documento define el flujo y la estructura del proyecto, por lo que es crucial que lo analices en detalle y sigas sus recomendaciones y procesos."
+	@echo ""
+	@echo "Además, el documento puede referenciar otras documentaciones útiles. Léelas todas, ya que te ayudarán a comprender mejor el ecosistema del proyecto y a integrarte de manera eficiente en el desarrollo."
+	@echo ""
+	@echo "Ejecuta el comando make tree para ver la estructura del proyecto."
+	@echo ""
+	@echo "Si tienes alguna pregunta o necesitas ayuda, no dudes en preguntar. Estoy aquí para ayudarte."
+	@echo ""
+	@echo "¡Buena suerte!"
