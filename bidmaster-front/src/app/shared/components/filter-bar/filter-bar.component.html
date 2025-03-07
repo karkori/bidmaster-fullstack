@@ -1,0 +1,24 @@
+<div class="px-4 py-3 {{colorClasses.split(' ')[0]}} border-b {{colorClasses.split(' ')[1]}}">
+  <div class="flex items-center justify-between">
+    <div class="flex space-x-4">
+      @for (option of filterOptions; track option.value) {
+        <button 
+          (click)="onFilterClick(option.value)" 
+          [class]="currentFilter === option.value ? activeButtonClasses : ''"
+          class="px-3 py-1 rounded-md text-sm font-medium {{colorClasses.split(' ')[2]}} {{colorClasses.split(' ')[3]}}"
+        >
+          {{option.label}}
+        </button>
+      }
+    </div>
+    
+    <div>
+      <input
+        type="text"
+        [placeholder]="searchPlaceholder"
+        class="px-3 py-1 border border-gray-300 rounded-md text-sm"
+        (input)="onSearch($event)"
+      />
+    </div>
+  </div>
+</div>

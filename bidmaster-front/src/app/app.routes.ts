@@ -20,27 +20,27 @@ export const routes: Routes = [
           // Rutas principales de usuario
           {
             path: 'profile',
-            loadComponent: () => import('./pages/dashboard/profile/profile.component')
+            loadComponent: () => import('./pages/dashboard/profile-page/profile-page.component')
           },
           {
             path: 'my-bids',
-            loadComponent: () => import('./pages/dashboard/my-bids/my-bids.component')
+            loadComponent: () => import('./pages/dashboard/my-bids-page/my-bids-page.component')
           },
           {
             path: 'favorites',
-            loadComponent: () => import('./pages/dashboard/favorites/favorites.component')
+            loadComponent: () => import('./pages/dashboard/favorites-page/favorites-page.component')
           },
           {
             path: 'messages',
-            loadComponent: () => import('./pages/dashboard/messages/messages.component')
+            loadComponent: () => import('./pages/dashboard/messages-page/messages-page.component')
           },
           {
             path: 'notifications',
-            loadComponent: () => import('./pages/dashboard/notifications/notifications.component')
+            loadComponent: () => import('./pages/dashboard/notifications-page/notifications-page.component')
           },
           {
             path: 'create-auction',
-            loadComponent: () => import('./pages/dashboard/create-auction/create-auction.component')
+            loadComponent: () => import('./pages/dashboard/create-auction-page/create-auction-page.component')
           },
           
           // Rutas de administración

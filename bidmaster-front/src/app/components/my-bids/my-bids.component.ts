@@ -1,6 +1,14 @@
-import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { AuthService } from '@core/services/auth.service';
+
+// Importar componentes compartidos
+import EmptyStateComponent from '../../shared/components/empty-state/empty-state.component';
+import FilterBarComponent from '../../shared/components/filter-bar/filter-bar.component';
+import LoadingSpinnerComponent from '../../shared/components/loading-spinner/loading-spinner.component';
+import PageHeaderComponent from '../../shared/components/page-header/page-header.component';
+import StatusBadgeComponent from '../../shared/components/status-badge/status-badge.component';
 
 interface Bid {
   id: string;
@@ -14,7 +22,11 @@ interface Bid {
 @Component({
   selector: 'app-my-bids',
   standalone: true,
-  imports: [CommonModule],
+  imports: [
+    CommonModule,
+    PageHeaderComponent,
+    FilterBarComponent,
+  ],
   templateUrl: './my-bids.component.html',
   styleUrls: []
 })
@@ -71,6 +83,12 @@ export default class MyBidsComponent implements OnInit {
   
   onSearch(event: Event): void {
     this.searchTerm = (event.target as HTMLInputElement).value;
+    this.filterBids(this.currentFilter);
+  }
+  
+  // Método para recibir el evento de búsqueda del componente FilterBar
+  onSearchChange(value: string): void {
+    this.searchTerm = value;
     this.filterBids(this.currentFilter);
   }
   
