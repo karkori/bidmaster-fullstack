@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 
@@ -11,7 +11,10 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 export default class CreateAuctionComponent {
   auctionForm: FormGroup;
   
-  constructor(private fb: FormBuilder) {
+  // Usando inject() en lugar de inyección por constructor
+  private fb = inject(FormBuilder);
+  
+  constructor() {
     // Obtener la fecha actual + 7 días para la fecha de finalización predeterminada
     const defaultEndDate = new Date();
     defaultEndDate.setDate(defaultEndDate.getDate() + 7);
