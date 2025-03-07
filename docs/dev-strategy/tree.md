@@ -1,3 +1,4 @@
+make[1]: se entra en el directorio '/home/mustafa/CascadeProjects/fullstack-demo'
 /home/mustafa/CascadeProjects/fullstack-demo
 ├── bidmaster-front
 │   ├── angular.json
@@ -221,8 +222,7 @@
 │   │   ├── ai-strategy.md
 │   │   ├── angular_best_practices.md
 │   │   ├── springboot_best_practices.md
-│   │   ├── tree.md
-│   │   └── tree_raw.md
+│   │   └── tree.md
 │   ├── README.md
 │   ├── use-cases
 │   │   ├── admin
@@ -232,6 +232,8 @@
 │   │   └── user
 │   │       └── README.md
 │   └── use-cases.md
+├── Makefile
 └── README.md
 
 96 directories, 139 files
+make[1]: se sale del directorio '/home/mustafa/CascadeProjects/fullstack-demo'

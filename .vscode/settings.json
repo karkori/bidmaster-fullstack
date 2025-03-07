@@ -12,5 +12,6 @@
             "database": "bidmaster",
             "username": "postgres"
         }
-    ]
+    ],
+    "makefile.configureOnOpen": false
 }

@@ -50,12 +50,40 @@ El proyecto sigue una arquitectura full-stack claramente dividida:
 
 ## 📊 Comandos Útiles
 
-### Generación de Estructura de Directorios
+### Makefile
 
-Para mantener actualizada la documentación de la estructura del proyecto, utiliza el siguiente comando:
+El proyecto incluye un `Makefile` en la raíz que centraliza todos los comandos útiles para desarrollo. Este enfoque facilita tanto a los desarrolladores como a los agentes de IA la ejecución de tareas comunes sin necesidad de recordar comandos específicos para cada tecnología.
 
 ```bash
-tree -I "node_modules|.git|.angular|.idea|dist|.vscode|target|build" -L 15 /home/mustafa/CascadeProjects/fullstack-demo > /home/mustafa/CascadeProjects/fullstack-demo/docs/dev-strategy/tree.md
+# Ver todos los comandos disponibles con descripciones
+make help
+
+# Comandos principales
+make setup                  # Configura todo el proyecto (instala dependencias)
+make start                  # Inicia toda la aplicación (frontend + backend + DB)
+make stop                   # Detiene todos los servicios
+make clean                  # Limpia archivos generados y cachés
+
+# Comandos específicos para frontend
+make frontend-run           # Inicia el servidor de desarrollo Angular
+make frontend-build         # Construye la aplicación Angular para producción
+
+# Comandos específicos para backend
+make backend-run            # Inicia el servidor Spring Boot
+make backend-debug          # Inicia el servidor en modo debug
+
+# Comandos para Docker
+make docker-up              # Inicia contenedores
+make docker-down            # Detiene contenedores
+
+# Comandos para documentación
+make tree                   # Muestra la estructura del proyecto completa
+make update-docs            # Actualiza la documentación de estructura en tree.md
+
+# Comandos específicos para IA
+make ai-help                # Muestra información útil para agentes IA
+make check-structure        # Muestra la estructura del proyecto
+make generate-component     # Genera nuevos componentes con la estructura adecuada
 ```
 
 ### Navegación Rápida
@@ -65,7 +93,7 @@ tree -I "node_modules|.git|.angular|.idea|dist|.vscode|target|build" -L 15 /home
 cd /home/mustafa/CascadeProjects/fullstack-demo/bidmaster-front
 
 # Backend
-cd /home/mustafa/CascadeProjects/fullstack-demo/bidmaster-api
+cd /home/mustafa/CascadeProjects/fullstack-demo/bidmaster-ws
 
 # Documentación de estrategias de desarrollo
 cd /home/mustafa/CascadeProjects/fullstack-demo/docs/dev-strategy
