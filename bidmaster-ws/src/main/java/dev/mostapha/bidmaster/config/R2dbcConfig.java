@@ -1,14 +1,14 @@
 package dev.mostapha.bidmaster.config;
 
-import io.r2dbc.spi.ConnectionFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.r2dbc.config.AbstractR2dbcConfiguration;
 import org.springframework.data.r2dbc.convert.R2dbcCustomConversions;
-import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.data.r2dbc.dialect.PostgresDialect;
 import org.springframework.data.r2dbc.dialect.R2dbcDialect;
 import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories;
+
+import io.r2dbc.spi.ConnectionFactory;
 
 /**
  * Configuración de R2DBC para proporcionar los beans necesarios
@@ -24,6 +24,7 @@ public class R2dbcConfig extends AbstractR2dbcConfiguration {
         this.connectionFactory = connectionFactory;
     }
 
+    @SuppressWarnings("null")
     @Override
     public ConnectionFactory connectionFactory() {
         return connectionFactory;
@@ -34,6 +35,7 @@ public class R2dbcConfig extends AbstractR2dbcConfiguration {
         return new PostgresDialect();
     }
     
+    @SuppressWarnings("null")
     @Bean
     @Override
     public R2dbcCustomConversions r2dbcCustomConversions() {

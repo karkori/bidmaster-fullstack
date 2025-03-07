@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { SearchBarComponent } from '../../shared/components/search-bar/search-bar.component';
-import { AuthButtonComponent } from '../../shared/components/auth-button/auth-button.component';
+import { SearchBarComponent } from '@shared/components/search-bar/search-bar.component';
+import { AuthButtonComponent } from '@shared/components/auth-button/auth-button.component';
 
 @Component({
   selector: 'app-header',

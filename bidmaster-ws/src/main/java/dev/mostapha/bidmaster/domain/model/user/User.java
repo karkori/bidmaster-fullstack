@@ -271,6 +271,17 @@ public class User {
         updatedAt = LocalDateTime.now();
     }
     
+    /**
+     * Verifica si la contraseña proporcionada coincide con la del usuario
+     * @param password Contraseña a verificar
+     * @return true si la contraseña es válida, false si no
+     */
+    public boolean isValidPassword(String password) {
+        // En una implementación real, aquí se usaría un algoritmo de hashing
+        // como BCrypt para comparar las contraseñas de forma segura
+        return this.password.equals(password);
+    }
+    
     // Getters y setters
     
     public UUID getId() {

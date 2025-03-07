@@ -1,8 +1,8 @@
-import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { HeaderComponent } from '../header/header.component';
-import { CategoryNavComponent } from '../../shared/components/category-nav/category-nav.component';
+import { HeaderComponent } from '@layouts/header/header.component';
+import { CategoryNavComponent } from '@shared/components/category-nav/category-nav.component';
 
 @Component({
   selector: 'app-main-layout',

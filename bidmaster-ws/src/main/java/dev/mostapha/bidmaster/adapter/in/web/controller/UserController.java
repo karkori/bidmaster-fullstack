@@ -18,7 +18,9 @@ import org.springframework.web.server.ResponseStatusException;
 
 import dev.mostapha.bidmaster.adapter.in.web.dto.BalanceOperationDTO;
 import dev.mostapha.bidmaster.adapter.in.web.dto.UserResponseDTO;
+import dev.mostapha.bidmaster.adapter.in.web.dto.request.LoginRequestDTO;
 import dev.mostapha.bidmaster.adapter.in.web.dto.request.UserRequestDTO;
+import dev.mostapha.bidmaster.adapter.in.web.dto.response.LoginResponseDTO;
 import dev.mostapha.bidmaster.adapter.in.web.mapper.UserMapper;
 import dev.mostapha.bidmaster.application.port.in.UserUseCase;
 import dev.mostapha.bidmaster.domain.model.user.UserStatus;
@@ -31,66 +33,66 @@ import reactor.core.publisher.Mono;
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
-    
+
     private final UserUseCase userUseCase;
     private final UserMapper userMapper;
-    
+
     public UserController(UserUseCase userUseCase, UserMapper userMapper) {
         this.userUseCase = userUseCase;
         this.userMapper = userMapper;
     }
-    
+
     /**
      * Registra un nuevo usuario.
      */
-    @PostMapping
+    @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
     public Mono<UserResponseDTO> registerUser(@RequestBody UserRequestDTO requestDTO) {
         return Mono.just(requestDTO)
-            .map(userMapper::toUserForRegistration)
-            .flatMap(userUseCase::registerUser)
-            .map(userMapper::toResponseDTO);
+                .map(userMapper::toUserForRegistration)
+                .flatMap(userUseCase::registerUser)
+                .map(userMapper::toResponseDTO);
     }
-    
+
     /**
      * Busca un usuario por su ID.
      */
     @GetMapping("/{id}")
     public Mono<UserResponseDTO> getUserById(@PathVariable UUID id) {
         return userUseCase.findUserById(id)
-            .map(userMapper::toResponseDTO)
-            .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado")));
+                .map(userMapper::toResponseDTO)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado")));
     }
-    
+
     /**
      * Busca un usuario por su nombre de usuario.
      */
     @GetMapping("/by-username/{username}")
     public Mono<UserResponseDTO> getUserByUsername(@PathVariable String username) {
         return userUseCase.findUserByUsername(username)
-            .map(userMapper::toResponseDTO)
-            .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado")));
+                .map(userMapper::toResponseDTO)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado")));
     }
-    
+
     /**
      * Busca un usuario por su correo electrónico.
      */
     @GetMapping("/by-email/{email}")
     public Mono<UserResponseDTO> getUserByEmail(@PathVariable String email) {
         return userUseCase.findUserByEmail(email)
-            .map(userMapper::toResponseDTO)
-            .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado")));
+                .map(userMapper::toResponseDTO)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado")));
     }
-    
+
     /**
      * Lista todos los usuarios.
      */
     @GetMapping
     public Flux<UserResponseDTO> getAllUsers() {
         return userUseCase.findAllUsers()
-            .map(userMapper::toResponseDTO);
+                .map(userMapper::toResponseDTO);
     }
-    
+
     /**
      * Lista usuarios por estado.
      */
@@ -98,21 +100,21 @@ public class UserController {
     public Flux<UserResponseDTO> getUsersByStatus(@PathVariable String status) {
         UserStatus userStatus = UserStatus.valueOf(status);
         return userUseCase.findUsersByStatus(userStatus)
-            .map(userMapper::toResponseDTO);
+                .map(userMapper::toResponseDTO);
     }
-    
+
     /**
      * Actualiza la información de un usuario.
      */
     @PutMapping("/{id}")
     public Mono<UserResponseDTO> updateUser(@PathVariable UUID id, @RequestBody UserRequestDTO requestDTO) {
         return userUseCase.findUserById(id)
-            .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado")))
-            .map(existingUser -> userMapper.updateUserFromDTO(existingUser, requestDTO))
-            .flatMap(userUseCase::updateUser)
-            .map(userMapper::toResponseDTO);
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado")))
+                .map(existingUser -> userMapper.updateUserFromDTO(existingUser, requestDTO))
+                .flatMap(userUseCase::updateUser)
+                .map(userMapper::toResponseDTO);
     }
-    
+
     /**
      * Actualiza el estado de un usuario.
      */
@@ -126,7 +128,7 @@ public class UserController {
             return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Estado de usuario no válido"));
         }
     }
-    
+
     /**
      * Elimina un usuario.
      */
@@ -135,78 +137,102 @@ public class UserController {
     public Mono<Void> deleteUser(@PathVariable UUID id) {
         return userUseCase.deleteUser(id);
     }
-    
+
     /**
      * Registra un inicio de sesión exitoso.
      */
     @PostMapping("/{id}/login/success")
     public Mono<ResponseEntity<Void>> recordSuccessfulLogin(@PathVariable UUID id) {
         return userUseCase.recordSuccessfulLogin(id)
-            .flatMap(success -> success ? 
-                Mono.just(ResponseEntity.ok().<Void>build()) : 
-                Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado")))
-            .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()));
+                .flatMap(success -> success ? Mono.just(ResponseEntity.ok().<Void>build())
+                        : Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado")))
+                .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()));
     }
-    
+
     /**
      * Registra un intento de inicio de sesión fallido.
      */
     @PostMapping("/{id}/login/failure")
     public Mono<ResponseEntity<Void>> recordFailedLogin(@PathVariable UUID id) {
         return userUseCase.recordFailedLogin(id)
-            .flatMap(success -> success ? 
-                Mono.just(ResponseEntity.ok().<Void>build()) : 
-                Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado")))
-            .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()));
+                .flatMap(success -> success ? Mono.just(ResponseEntity.ok().<Void>build())
+                        : Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado")))
+                .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()));
     }
-    
+
     /**
      * Añade saldo al balance disponible del usuario.
      */
     @PostMapping("/{id}/balance/add")
     public Mono<ResponseEntity<Void>> addBalance(@PathVariable UUID id, @RequestBody BalanceOperationDTO dto) {
         return userUseCase.addBalance(id, dto.getAmount())
-            .flatMap(success -> success ? 
-                Mono.just(ResponseEntity.ok().<Void>build()) : 
-                Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "No se pudo añadir el saldo")))
-            .onErrorResume(e -> {
-                if (e instanceof IllegalArgumentException) {
-                    return Mono.just(ResponseEntity.badRequest().<Void>build());
-                }
-                return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
-            });
+                .flatMap(success -> success ? Mono.just(ResponseEntity.ok().<Void>build())
+                        : Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "No se pudo añadir el saldo")))
+                .onErrorResume(e -> {
+                    if (e instanceof IllegalArgumentException) {
+                        return Mono.just(ResponseEntity.badRequest().<Void>build());
+                    }
+                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
+                });
     }
-    
+
     /**
      * Resta saldo del balance disponible del usuario.
      */
     @PostMapping("/{id}/balance/subtract")
     public Mono<ResponseEntity<Void>> subtractBalance(@PathVariable UUID id, @RequestBody BalanceOperationDTO dto) {
         return userUseCase.subtractBalance(id, dto.getAmount())
-            .flatMap(success -> success ? 
-                Mono.just(ResponseEntity.ok().<Void>build()) : 
-                Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).build()));
+                .flatMap(success -> success ? Mono.just(ResponseEntity.ok().<Void>build())
+                        : Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).build()));
     }
-    
+
     /**
      * Bloquea una cantidad del balance para una operación pendiente.
      */
     @PostMapping("/{id}/balance/block")
     public Mono<ResponseEntity<Void>> blockBalance(@PathVariable UUID id, @RequestBody BalanceOperationDTO dto) {
         return userUseCase.blockBalance(id, dto.getAmount())
-            .flatMap(success -> success ? 
-                Mono.just(ResponseEntity.ok().<Void>build()) : 
-                Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).build()));
+                .flatMap(success -> success ? Mono.just(ResponseEntity.ok().<Void>build())
+                        : Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).build()));
     }
-    
+
+    /**
+     * Endpoint para autenticar un usuario.
+     * 
+     * @param loginRequest Credenciales de login (username/email y password)
+     * @return Datos del usuario autenticado junto con un token JWT
+     */
+    @PostMapping("/login")
+    public Mono<ResponseEntity<LoginResponseDTO>> login(@RequestBody LoginRequestDTO loginRequest) {
+        return userUseCase.login(loginRequest.getUsername(), loginRequest.getPassword())
+                .map(user -> {
+                    // Crear respuesta con token JWT (en una implementación real se generaría un
+                    // token)
+                    LoginResponseDTO response = LoginResponseDTO.builder()
+                            .id(user.getId().toString())
+                            .username(user.getUsername())
+                            .email(user.getEmail())
+                            .firstName(user.getFirstName())
+                            .lastName(user.getLastName())
+                            .role(user.getRole().toString())
+                            .token("jwt_token_placeholder")
+                            .tokenType("Bearer")
+                            .build();
+
+                    return ResponseEntity.ok(response);
+                })
+                .onErrorResume(IllegalArgumentException.class,
+                        e -> Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                                .body((LoginResponseDTO) null)));
+    }
+
     /**
      * Desbloquea una cantidad del balance bloqueado.
      */
     @PostMapping("/{id}/balance/unblock")
     public Mono<ResponseEntity<Void>> unblockBalance(@PathVariable UUID id, @RequestBody BalanceOperationDTO dto) {
         return userUseCase.unblockBalance(id, dto.getAmount())
-            .flatMap(success -> success ? 
-                Mono.just(ResponseEntity.ok().<Void>build()) : 
-                Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).build()));
+                .flatMap(success -> success ? Mono.just(ResponseEntity.ok().<Void>build())
+                        : Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).build()));
     }
 }

@@ -201,4 +201,28 @@ public class UserService implements UserUseCase {
                     }
                 });
     }
+
+    @Override
+    public Mono<User> login(String usernameOrEmail, String password) {
+        // Primero intentamos encontrar por nombre de usuario
+        return userRepository.findByUsername(usernameOrEmail)
+                .switchIfEmpty(
+                        // Si no encontramos por username, intentamos por email
+                        userRepository.findByEmail(usernameOrEmail))
+                .switchIfEmpty(
+                        Mono.error(new IllegalArgumentException("Usuario no encontrado")))
+                .flatMap(user -> {
+                    // Verificamos si la contraseña coincide
+                    if (user.isValidPassword(password)) {
+                        // Registramos el login exitoso
+                        user.recordSuccessfulLogin();
+                        return userRepository.save(user);
+                    } else {
+                        // Registramos el intento fallido de login
+                        user.incrementFailedLogins();
+                        userRepository.save(user).subscribe(); // Guardar en segundo plano
+                        return Mono.error(new IllegalArgumentException("Contraseña incorrecta"));
+                    }
+                });
+    }
 }

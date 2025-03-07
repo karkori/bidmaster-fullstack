@@ -1,4 +1,6 @@
 spring:
+  profiles:
+    active: dev # Activa el perfil de desarrollo
   application:
     name: BidMaster
   # Configuración R2DBC para PostgreSQL
@@ -11,13 +13,13 @@ spring:
       max-size: 20
   # Configuración para Flyway (migraciones de base de datos)
   flyway:
+    enabled: true
     url: jdbc:postgresql://localhost:5432/bidmaster
     user: postgres
     password: postgres
-    baseline-on-migrate: true
-    enabled: true
+    # baseline-on-migrate: true
     clean-disabled: false     # Permite la limpieza de la base de datos
-    clean-on-validation-error: true  # Limpia si hay errores de validación
+    # clean-on-validation-error: true  # Limpia si hay errores de validación
     # clean: true              # Ejecuta flyway:clean al inicio
     locations: classpath:db/migration # Ubicación de los scripts de migración
 

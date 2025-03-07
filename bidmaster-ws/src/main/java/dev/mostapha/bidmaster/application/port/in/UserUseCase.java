@@ -89,4 +89,12 @@ public interface UserUseCase {
      * Desbloquea una cantidad del saldo bloqueado y la devuelve al balance disponible
      */
     Mono<Boolean> unblockBalance(UUID id, BigDecimal amount);
+    
+    /**
+     * Autentica a un usuario con sus credenciales.
+     * @param username El nombre de usuario o email
+     * @param password La contraseña del usuario
+     * @return Usuario autenticado si las credenciales son válidas
+     */
+    Mono<User> login(String username, String password);
 }

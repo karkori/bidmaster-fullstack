@@ -10,6 +10,11 @@ Este documento describe la estrategia utilizada para desarrollar este proyecto c
 
 ### 2. **Arquitectura del Proyecto**
 - **Prompt Ejemplo**: "Crea una estructura de carpetas inicial para un proyecto [Tipo de Proyecto] que incluya [Tecnologías Clave]."
+- **Documentación de Estructura**: "Utiliza el comando `tree` para generar y mantener actualizada la estructura de directorios del proyecto, excluyendo directorios innecesarios como node_modules, .git, etc."
+
+```bash
+tree -I "node_modules|.git|.angular|.idea|dist|.vscode|target|build" -L 15 /home/mustafa/CascadeProjects/fullstack-demo > /home/mustafa/CascadeProjects/fullstack-demo/docs/dev-strategy/tree_raw.md
+```
 
 ### 3. **Documentación de Dominio**
 - **Prompt Ejemplo**: "Genera la documentación inicial para las entidades, reglas y estados del dominio [Nombre del Dominio]."
@@ -42,6 +47,7 @@ Implementa el endpoint [Nombre del Endpoint] en [Lenguaje/Framework] que cumpla 
 ### 1. **Inicialización**
 - Definir objetivos y alcance
 - Crear estructura de carpetas
+- Documentar estructura con `tree` para referencia
 
 ### 2. **Diseño**
 - Documentar dominio
@@ -61,6 +67,36 @@ Implementa el endpoint [Nombre del Endpoint] en [Lenguaje/Framework] que cumpla 
 - Ser específico y claro
 - Proporcionar contexto
 - Definir el formato esperado
+
+### Para Estructura y Organización de Código
+- **Templates separados**: Siempre implementar los templates Angular en archivos HTML separados (`.component.html`) en lugar de templates inline
+- **Arquitectura por capas**: Seguir una clara separación de responsabilidades entre componentes, servicios y modelos
+- **Componentes standalone**: Preferir componentes Angular standalone para mejorar la modularidad y los tiempos de compilación
+- **Aliases de módulos**: Utilizar los aliases definidos en tsconfig.json para mejorar la legibilidad y mantenimiento de las importaciones:
+  ```typescript
+  // Aliases configurados en tsconfig.json
+  "@components/*" : ["app/components/*"]
+  "@pages/*" : ["app/pages/*"]
+  "@layouts/*" : ["app/layouts/*"]
+  "@core/*" : ["app/core/*"]
+  "@shared/*" : ["app/shared/*"]
+  "@environments/*" : ["environments/*"]
+  ```
+
+  Ejemplo de uso:
+  ```typescript
+  // En lugar de usar rutas relativas complicadas
+  import { SomeComponent } from '../../../shared/components/some.component';
+  
+  // Usar aliases para importaciones más limpias y mantenibles
+  import { SomeComponent } from '@shared/components/some.component';
+  ```
+
+### Para Documentación de Estructura
+- Mantener actualizada la estructura del proyecto con `tree` para mejorar el contexto
+- Excluir directorios irrelevantes (node_modules, .git, etc.) para mayor claridad
+- Separar las estructuras de frontend y backend para facilitar la comprensión
+- Documentar componentes pendientes de implementar para seguimiento
 
 ### Para Colaboración con IA
 - Revisar y validar resultados
