@@ -9,7 +9,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   template: `
-    <div class="max-w-4xl mx-auto">
+    <div class="mx-auto">
       <div class="bg-white rounded-lg shadow-md overflow-hidden">
         <div class="p-6 bg-gradient-to-r from-blue-700 to-blue-900 text-white">
           <h1 class="text-2xl font-bold">Mi perfil</h1>

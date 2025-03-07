@@ -16,7 +16,7 @@ interface Bid {
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="max-w-6xl mx-auto">
+    <div class="mx-auto">
       <div class="bg-white rounded-lg shadow-md overflow-hidden mb-6">
         <div class="p-6 bg-gradient-to-r from-blue-700 to-blue-900 text-white">
           <h1 class="text-2xl font-bold">Mis pujas</h1>

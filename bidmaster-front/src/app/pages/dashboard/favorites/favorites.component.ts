@@ -18,7 +18,7 @@ interface Favorite {
   standalone: true,
   imports: [CommonModule, RouterLink],
   template: `
-    <div class="max-w-6xl mx-auto">
+    <div class="mx-auto">
       <div class="bg-white rounded-lg shadow-md overflow-hidden mb-6">
         <div class="p-6 bg-gradient-to-r from-pink-600 to-pink-800 text-white">
           <h1 class="text-2xl font-bold">Mis favoritos</h1>
