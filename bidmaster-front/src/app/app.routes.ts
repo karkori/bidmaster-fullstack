@@ -44,7 +44,7 @@ export const routes: Routes = [
           },
           
           // Rutas de administración
-          {
+         /* {
             path: 'admin',
             children: [
               {
@@ -56,7 +56,7 @@ export const routes: Routes = [
                 redirectTo: '/dashboard/profile' // change to loadComponent when component is created 
               }
             ]
-          },
+          },*/
           
           // Redirección por defecto a perfil
           {

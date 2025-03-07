@@ -19,20 +19,20 @@
     }
     
     <form class="mt-8 space-y-6" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-      <div class="rounded-md shadow-sm -space-y-px">
+      <div class="space-y-4">
         <div>
-          <label for="username" class="sr-only">Nombre de usuario</label>
+          <label for="username" appFormLabel [required]="true">Nombre de usuario</label>
           <input id="username" name="username" type="text" formControlName="username" required 
-            class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" 
+            appFormControl [controlStatus]="loginForm.get('username')?.invalid && (loginForm.get('username')?.dirty || loginForm.get('username')?.touched) ? 'invalid' : 'default'" 
             placeholder="Nombre de usuario">
           @if (loginForm.get('username')?.invalid && (loginForm.get('username')?.dirty || loginForm.get('username')?.touched)) {
             <p class="mt-2 text-sm text-red-600">{{ getErrorMessage('username') }}</p>
           }
         </div>
         <div>
-          <label for="password" class="sr-only">Contraseña</label>
+          <label for="password" appFormLabel [required]="true">Contraseña</label>
           <input id="password" name="password" type="password" formControlName="password" required 
-            class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" 
+            appFormControl [controlStatus]="loginForm.get('password')?.invalid && (loginForm.get('password')?.dirty || loginForm.get('password')?.touched) ? 'invalid' : 'default'" 
             placeholder="Contraseña">
           @if (loginForm.get('password')?.invalid && (loginForm.get('password')?.dirty || loginForm.get('password')?.touched)) {
             <p class="mt-2 text-sm text-red-600">{{ getErrorMessage('password') }}</p>
@@ -58,8 +58,9 @@
 
       <div>
         <button type="submit" [disabled]="loading || loginForm.invalid"
-          class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-300">
+          class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-300 disabled:cursor-not-allowed">
           @if (loading) {
+            <span class="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-white border-r-transparent align-[-0.125em] mr-2"></span>
             <span>Cargando...</span>
           } @else {
             <span>Iniciar sesión</span>

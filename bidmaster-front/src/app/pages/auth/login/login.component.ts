@@ -6,9 +6,19 @@ import { z } from 'zod';
 import { loginSchema, LoginFormType } from '@shared/validators/auth.schemas';
 import { AuthService } from '@core/services/auth.service';
 
+// Importar directivas de formulario
+import { FormControlDirective, FormLabelDirective } from '@shared/directives';
+
 @Component({
   selector: 'app-login',
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  standalone: true,
+  imports: [
+    CommonModule, 
+    ReactiveFormsModule, 
+    RouterModule,
+    FormControlDirective,
+    FormLabelDirective
+  ],
   templateUrl: './login.component.html',
   styleUrls: []
 })

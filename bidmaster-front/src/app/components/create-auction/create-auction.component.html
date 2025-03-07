@@ -16,14 +16,13 @@
 
           <div class="grid grid-cols-1 gap-6 mb-6">
             <div>
-              <label for="title" class="block text-sm font-medium text-gray-700"
-                >Título del artículo *</label
-              >
+              <label for="title" appFormLabel [required]="true">Título del artículo</label>
               <input
                 type="text"
                 id="title"
                 formControlName="title"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500"
+                appFormControl
+                [controlStatus]="auctionForm.get('title')?.invalid && auctionForm.get('title')?.touched ? 'invalid' : 'default'"
               />
               @if (auctionForm.get('title')?.invalid &&
               auctionForm.get('title')?.touched) {
@@ -32,16 +31,13 @@
             </div>
 
             <div>
-              <label
-                for="description"
-                class="block text-sm font-medium text-gray-700"
-                >Descripción detallada *</label
-              >
+              <label for="description" appFormLabel [required]="true">Descripción detallada</label>
               <textarea
                 id="description"
                 formControlName="description"
                 rows="4"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500"
+                appFormControl
+                [controlStatus]="auctionForm.get('description')?.invalid && auctionForm.get('description')?.touched ? 'invalid' : 'default'"
               ></textarea>
               @if (auctionForm.get('description')?.invalid &&
               auctionForm.get('description')?.touched) {
@@ -53,15 +49,12 @@
             </div>
 
             <div>
-              <label
-                for="category"
-                class="block text-sm font-medium text-gray-700"
-                >Categoría *</label
-              >
+              <label for="category" appFormLabel [required]="true">Categoría</label>
               <select
                 id="category"
                 formControlName="category"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500"
+                appFormControl
+                [controlStatus]="auctionForm.get('category')?.invalid && auctionForm.get('category')?.touched ? 'invalid' : 'default'"
               >
                 <option value="">Selecciona una categoría</option>
                 <option value="electronics">Electrónica</option>
@@ -87,18 +80,15 @@
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div>
-              <label
-                for="startingPrice"
-                class="block text-sm font-medium text-gray-700"
-                >Precio inicial ($) *</label
-              >
+              <label for="startingPrice" appFormLabel [required]="true">Precio inicial ($)</label>
               <input
                 type="number"
                 id="startingPrice"
                 formControlName="startingPrice"
                 min="0.01"
                 step="0.01"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500"
+                appFormControl
+                [controlStatus]="auctionForm.get('startingPrice')?.invalid && auctionForm.get('startingPrice')?.touched ? 'invalid' : 'default'"
               />
               @if (auctionForm.get('startingPrice')?.invalid &&
               auctionForm.get('startingPrice')?.touched) {
@@ -109,18 +99,14 @@
             </div>
 
             <div>
-              <label
-                for="reservePrice"
-                class="block text-sm font-medium text-gray-700"
-                >Precio de reserva ($)</label
-              >
+              <label for="reservePrice" appFormLabel>Precio de reserva ($)</label>
               <input
                 type="number"
                 id="reservePrice"
                 formControlName="reservePrice"
                 min="0"
                 step="0.01"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500"
+                appFormControl
               />
               <p class="mt-1 text-xs text-gray-500">
                 Precio mínimo para que la venta se concrete (opcional)
@@ -128,16 +114,13 @@
             </div>
 
             <div>
-              <label
-                for="endDate"
-                class="block text-sm font-medium text-gray-700"
-                >Fecha de finalización *</label
-              >
+              <label for="endDate" appFormLabel [required]="true">Fecha de finalización</label>
               <input
                 type="datetime-local"
                 id="endDate"
                 formControlName="endDate"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500"
+                appFormControl
+                [controlStatus]="auctionForm.get('endDate')?.invalid && auctionForm.get('endDate')?.touched ? 'invalid' : 'default'"
               />
               @if (auctionForm.get('endDate')?.invalid &&
               auctionForm.get('endDate')?.touched) {
@@ -148,18 +131,14 @@
             </div>
 
             <div>
-              <label
-                for="minBidIncrement"
-                class="block text-sm font-medium text-gray-700"
-                >Incremento mínimo ($)</label
-              >
+              <label for="minBidIncrement" appFormLabel>Incremento mínimo ($)</label>
               <input
                 type="number"
                 id="minBidIncrement"
                 formControlName="minBidIncrement"
                 min="0.01"
                 step="0.01"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500"
+                appFormControl
               />
               <p class="mt-1 text-xs text-gray-500">
                 Cantidad mínima que debe aumentar cada puja
@@ -223,15 +202,12 @@
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div>
-              <label
-                for="condition"
-                class="block text-sm font-medium text-gray-700"
-                >Estado del artículo *</label
-              >
+              <label for="condition" appFormLabel [required]="true">Estado del artículo</label>
               <select
                 id="condition"
                 formControlName="condition"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500"
+                appFormControl
+                [controlStatus]="auctionForm.get('condition')?.invalid && auctionForm.get('condition')?.touched ? 'invalid' : 'default'"
               >
                 <option value="">Selecciona un estado</option>
                 <option value="new">Nuevo</option>
@@ -249,15 +225,12 @@
             </div>
 
             <div>
-              <label
-                for="shippingOptions"
-                class="block text-sm font-medium text-gray-700"
-                >Opciones de envío *</label
-              >
+              <label for="shippingOptions" appFormLabel [required]="true">Opciones de envío</label>
               <select
                 id="shippingOptions"
                 formControlName="shippingOptions"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500"
+                appFormControl
+                [controlStatus]="auctionForm.get('shippingOptions')?.invalid && auctionForm.get('shippingOptions')?.touched ? 'invalid' : 'default'"
               >
                 <option value="">Selecciona una opción</option>
                 <option value="seller_pays">El vendedor paga el envío</option>
@@ -311,6 +284,7 @@
               [disabled]="auctionForm.invalid"
               class="rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
+              <span class="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-white border-r-transparent align-[-0.125em] mr-2" *ngIf="false"></span>
               Publicar subasta
             </button>
           </div>

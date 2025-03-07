@@ -4,10 +4,26 @@ import { User } from '@shared/models/user.model';
 import { AuthService } from '@core/services/auth.service';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 
+// Importar componentes compartidos
+import PageHeaderComponent from '../../shared/components/page-header/page-header.component';
+import LoadingSpinnerComponent from '../../shared/components/loading-spinner/loading-spinner.component';
+import StatusBadgeComponent from '../../shared/components/status-badge/status-badge.component';
+
+// Importar directivas de formulario
+import { FormControlDirective, FormLabelDirective } from '../../shared/directives';
+
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [
+    CommonModule, 
+    ReactiveFormsModule,
+    PageHeaderComponent,
+    LoadingSpinnerComponent,
+    StatusBadgeComponent,
+    FormControlDirective,
+    FormLabelDirective
+  ],
   templateUrl: './profile.component.html',
   styleUrls: []
 })
@@ -15,6 +31,11 @@ export default class ProfileComponent implements OnInit {
   currentUser: User | null = null;
   profileForm!: FormGroup;
   passwordForm!: FormGroup;
+  loading = true;
+  saving = false;
+  savingPassword = false;
+  saveSuccess = false;
+  savePasswordSuccess = false;
   
   // Usando inject() en lugar de inyección por constructor
   private authService = inject(AuthService);
@@ -23,8 +44,12 @@ export default class ProfileComponent implements OnInit {
   constructor() {}
   
   ngOnInit(): void {
-    this.currentUser = this.authService.currentUserValue;
-    this.initForms();
+    // Simular carga de datos del usuario
+    setTimeout(() => {
+      this.currentUser = this.authService.currentUserValue;
+      this.initForms();
+      this.loading = false;
+    }, 1000);
   }
   
   initForms(): void {
@@ -74,15 +99,44 @@ export default class ProfileComponent implements OnInit {
   
   onSubmit(): void {
     if (this.profileForm.valid && this.profileForm.dirty) {
-      // Aquí iría la lógica para actualizar el perfil
-      console.log('Datos del perfil a actualizar:', this.profileForm.value);
+      this.saving = true;
+      this.saveSuccess = false;
+      
+      // Simular guardado de datos con un retraso
+      setTimeout(() => {
+        // Aquí iría la lógica para actualizar el perfil
+        console.log('Datos del perfil a actualizar:', this.profileForm.value);
+        
+        this.saving = false;
+        this.saveSuccess = true;
+        
+        // Ocultar mensaje de éxito después de un tiempo
+        setTimeout(() => {
+          this.saveSuccess = false;
+        }, 3000);
+      }, 1500);
     }
   }
   
   onPasswordChange(): void {
     if (this.passwordForm.valid) {
-      // Aquí iría la lógica para cambiar la contraseña
-      console.log('Cambio de contraseña:', this.passwordForm.value);
+      this.savingPassword = true;
+      this.savePasswordSuccess = false;
+      
+      // Simular cambio de contraseña con un retraso
+      setTimeout(() => {
+        // Aquí iría la lógica para cambiar la contraseña
+        console.log('Cambio de contraseña:', this.passwordForm.value);
+        
+        this.savingPassword = false;
+        this.savePasswordSuccess = true;
+        this.passwordForm.reset();
+        
+        // Ocultar mensaje de éxito después de un tiempo
+        setTimeout(() => {
+          this.savePasswordSuccess = false;
+        }, 3000);
+      }, 1500);
     }
   }
 }

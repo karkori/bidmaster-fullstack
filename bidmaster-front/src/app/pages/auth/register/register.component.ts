@@ -6,9 +6,19 @@ import { AuthService } from '@core/services/auth.service';
 import { registerSchema } from '@shared/validators/auth.schemas';
 import { z } from 'zod';
 
+// Importar directivas de formulario
+import { FormControlDirective, FormLabelDirective } from '@shared/directives';
+
 @Component({
   selector: 'app-register',
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  standalone: true,
+  imports: [
+    CommonModule, 
+    ReactiveFormsModule, 
+    RouterModule,
+    FormControlDirective,
+    FormLabelDirective
+  ],
   templateUrl: './register.component.html',
   styleUrls: []
 })
