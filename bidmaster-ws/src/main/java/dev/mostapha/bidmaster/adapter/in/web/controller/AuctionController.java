@@ -270,11 +270,11 @@ public class AuctionController {
                     return auctionUseCase.findAuctionById(UUID.fromString(id))
                             .<ResponseEntity<Void>>flatMap(auction -> {
                                 if (!auction.getSellerId().equals(user.getId())) {
-                                    return Mono.just(ResponseEntity.<Void>status(HttpStatus.FORBIDDEN).build());
+                                    return Mono.just(ResponseEntity.status(HttpStatus.FORBIDDEN).build());
                                 }
 
                                 return auctionUseCase.deleteAuction(UUID.fromString(id))
-                                        .then(Mono.just(ResponseEntity.noContent().<Void>build()));
+                                        .then(Mono.just(ResponseEntity.noContent().build()));
                             });
                 })
                 .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));

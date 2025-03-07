@@ -2,6 +2,9 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { FormControlDirective, FormLabelDirective } from '@shared/directives';
+import { Router } from '@angular/router';
+import { AuctionService } from '@core/services/auction.service';
+import { CreateAuctionDto } from '@shared/models/auction.model';
 
 @Component({
   selector: 'app-create-auction',
@@ -16,9 +19,13 @@ import { FormControlDirective, FormLabelDirective } from '@shared/directives';
 })
 export default class CreateAuctionComponent {
   auctionForm: FormGroup;
+  isSubmitting = false;
+  errorMessage: string | null = null;
   
   // Usando inject() en lugar de inyección por constructor
   private fb = inject(FormBuilder);
+  private auctionService = inject(AuctionService);
+  private router = inject(Router);
   
   constructor() {
     // Obtener la fecha actual + 7 días para la fecha de finalización predeterminada
@@ -37,7 +44,7 @@ export default class CreateAuctionComponent {
       title: ['', [Validators.required]],
       description: ['', [Validators.required, Validators.minLength(20)]],
       category: ['', [Validators.required]],
-      startingPrice: [1.00, [Validators.required, Validators.min(0.01)]],
+      initialPrice: [1.00, [Validators.required, Validators.min(0.01)]],
       reservePrice: [0],
       endDate: [defaultEndDateStr, [Validators.required]],
       minBidIncrement: [1.00],
@@ -49,8 +56,46 @@ export default class CreateAuctionComponent {
   
   onSubmit(): void {
     if (this.auctionForm.valid) {
-      console.log('Datos de la subasta:', this.auctionForm.value);
-      // Aquí iría la lógica para crear la subasta
+      this.isSubmitting = true;
+      this.errorMessage = null;
+      
+      // Formatear la fecha para incluir segundos (requerido por el backend)
+      const rawEndDate = this.auctionForm.value.endDate;
+      let formattedEndDate = rawEndDate;
+      
+      // Si la fecha no incluye segundos, añadirlos
+      if (rawEndDate && !rawEndDate.includes(':ss') && !rawEndDate.match(/\d{2}:\d{2}:\d{2}/)) {
+        formattedEndDate = rawEndDate + ':00';
+      }
+      
+      // Crear el DTO
+      const auctionData: CreateAuctionDto = {
+        title: this.auctionForm.value.title,
+        description: this.auctionForm.value.description,
+        category: this.auctionForm.value.category,
+        initialPrice: this.auctionForm.value.initialPrice,
+        reservePrice: this.auctionForm.value.reservePrice,
+        endDate: formattedEndDate,
+        minBidIncrement: this.auctionForm.value.minBidIncrement,
+        condition: this.auctionForm.value.condition,
+        shippingOptions: this.auctionForm.value.shippingOptions,
+        allowPause: this.auctionForm.value.allowPause || false
+      };
+      
+      // Enviar al backend
+      this.auctionService.createAuction(auctionData).subscribe({
+        next: (createdAuction) => {
+          this.isSubmitting = false;
+          console.log('Subasta creada exitosamente:', createdAuction);
+          // Redireccionar a la página de detalle o listado
+          this.router.navigate(['/dashboard']);
+        },
+        error: (error) => {
+          this.isSubmitting = false;
+          this.errorMessage = error.error?.message || 'Ha ocurrido un error al crear la subasta. Por favor, inténtalo de nuevo.';
+          console.error('Error al crear subasta:', error);
+        }
+      });
     } else {
       // Marcar todos los campos como tocados para mostrar errores
       Object.keys(this.auctionForm.controls).forEach(key => {
@@ -58,4 +103,14 @@ export default class CreateAuctionComponent {
       });
     }
   }
+  
+  // Getters para acceder fácilmente a los controles del formulario en la plantilla
+  get title() { return this.auctionForm.get('title'); }
+  get description() { return this.auctionForm.get('description'); }
+  get category() { return this.auctionForm.get('category'); }
+  get initialPrice() { return this.auctionForm.get('initialPrice'); }
+  get endDate() { return this.auctionForm.get('endDate'); }
+  get condition() { return this.auctionForm.get('condition'); }
+  get shippingOptions() { return this.auctionForm.get('shippingOptions'); }
+  get terms() { return this.auctionForm.get('terms'); }
 }
