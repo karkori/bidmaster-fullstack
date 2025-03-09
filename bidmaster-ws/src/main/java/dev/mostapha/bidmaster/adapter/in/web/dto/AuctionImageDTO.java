@@ -2,11 +2,13 @@ package dev.mostapha.bidmaster.adapter.in.web.dto;
 
 import java.util.UUID;
 
+import lombok.Data;
+
 /**
  * DTO para la información de una imagen de subasta
  */
 public class AuctionImageDTO {
-    
+
     private UUID id;
     private String url;
     private String description;
@@ -15,15 +17,27 @@ public class AuctionImageDTO {
     private String fileName;
     private String contentType;
     private long fileSize;
-    
+
     // Constructores
-    
+
     public AuctionImageDTO() {
         // Constructor por defecto necesario para la serialización
     }
-    
+
+    public AuctionImageDTO(UUID id, String url, String description, boolean isPrimary, int displayOrder,
+            String fileName, String contentType, long fileSize) {
+        this.id = id;
+        this.url = url;
+        this.description = description;
+        this.isPrimary = isPrimary;
+        this.displayOrder = displayOrder;
+        this.fileName = fileName;
+        this.contentType = contentType;
+        this.fileSize = fileSize;
+    }
+
     // Getters y Setters
-    
+
     public UUID getId() {
         return id;
     }

@@ -62,6 +62,12 @@ public class AuctionImageRepositoryAdapter implements AuctionImageRepository {
         return imageRepository.findByAuctionIdAndIsPrimaryTrue(auctionId)
                 .map(this::mapToDomain);
     }
+    
+    @Override
+    public Mono<AuctionImage> findByAuctionIdAndIsPrimaryTrue(UUID auctionId) {
+        return imageRepository.findByAuctionIdAndIsPrimaryTrue(auctionId)
+                .map(this::mapToDomain);
+    }
 
     @Override
     public Mono<Void> deleteById(UUID id) {
@@ -134,4 +140,10 @@ public class AuctionImageRepositoryAdapter implements AuctionImageRepository {
         
         return "image/jpeg"; // Tipo por defecto
     }
+
+    @Override
+    public Mono<AuctionImage> insertAuctionImage(AuctionImage image) {
+        return imageRepository.insertAuctionImage(mapToEntity(image))
+                .map(this::mapToDomain);
+    } 
 }

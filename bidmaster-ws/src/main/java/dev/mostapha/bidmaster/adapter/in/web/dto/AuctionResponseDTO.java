@@ -7,6 +7,8 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
+import java.util.List;
+
 /**
  * DTO para la respuesta con la información de una subasta
  */

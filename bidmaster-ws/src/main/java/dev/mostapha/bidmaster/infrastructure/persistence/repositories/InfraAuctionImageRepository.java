@@ -37,8 +37,8 @@ public interface InfraAuctionImageRepository extends ReactiveCrudRepository<Auct
      * Insertar una nueva imagen (para poder controlar mejor la inserción)
      */
     @Modifying
-    @Query("INSERT INTO auction_images (id, auction_id, url, description, is_primary, display_order, created_at, updated_at) VALUES (:id, :auctionId, :url, :description, :isPrimary, :displayOrder, :createdAt, :updatedAt)")
-    Mono<Void> insertAuctionImage(AuctionImageEntity image);
+    @Query("INSERT INTO auction_images (id, auction_id, url, description, is_primary, display_order, created_at, updated_at) VALUES (:#{#image.id}, :#{#image.auctionId}, :#{#image.url}, :#{#image.description}, :#{#image.isPrimary}, :#{#image.displayOrder}, :#{#image.createdAt}, :#{#image.updatedAt})")
+    Mono<AuctionImageEntity> insertAuctionImage(AuctionImageEntity image);
     
     /**
      * Actualizar una imagen existente

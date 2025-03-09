@@ -32,6 +32,11 @@ public interface AuctionImageRepository {
     Mono<AuctionImage> findPrimaryByAuctionId(UUID auctionId);
     
     /**
+     * Busca la primera imagen de una subasta marcada como principal
+     */
+    Mono<AuctionImage> findByAuctionIdAndIsPrimaryTrue(UUID auctionId);
+    
+    /**
      * Elimina una imagen
      */
     Mono<Void> deleteById(UUID id);
@@ -40,4 +45,9 @@ public interface AuctionImageRepository {
      * Elimina todas las imágenes de una subasta
      */
     Mono<Void> deleteByAuctionId(UUID auctionId);
+
+    /**
+     * Inserta una nueva imagen de subasta
+     */
+    Mono<AuctionImage> insertAuctionImage(AuctionImage image);
 }
