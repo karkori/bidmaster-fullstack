@@ -1,7 +1,5 @@
 package dev.mostapha.bidmaster.domain.model.auction;
 
-import dev.mostapha.bidmaster.domain.model.user.User;
-
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDateTime;
