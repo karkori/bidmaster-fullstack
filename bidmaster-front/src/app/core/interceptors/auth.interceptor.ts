@@ -27,7 +27,13 @@ export const authInterceptor: HttpInterceptorFn = (
 
   // Si el usuario está autenticado y tiene datos de autenticación, añadirlos al header
   // Nota: asumimos que el token está almacenado en localStorage por el AuthService
-  const token = localStorage.getItem('auth_token');
+  let token : string | null = null;
+
+  //verificar si estamos en un navegador
+  const isBrowser = typeof window !== 'undefined';
+  if (isBrowser) {
+    token = localStorage.getItem('auth_token');
+  }
 
   if (currentUser && token) {
     request = request.clone({

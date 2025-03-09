@@ -1,6 +1,38 @@
-<div class="space-y-6">
-  <h1 class="text-3xl font-bold text-gray-900">Bienvenido a BidMaster</h1>
-  <p class="text-lg text-gray-600">
-    Encuentra los mejores productos y haz tus ofertas.
-  </p>
+<div class="space-y-12">
+  <!-- Hero section -->
+  <section class="bg-gradient-to-r from-emerald-700 to-emerald-900 text-white py-12 px-4 rounded-lg">
+    <div class="max-w-4xl mx-auto space-y-6">
+      <h1 class="text-4xl font-bold">Bienvenido a BidMaster</h1>
+      <p class="text-xl opacity-90">
+        Descubre artículos únicos y haz tus ofertas en nuestra plataforma de subastas.
+      </p>
+      <div>
+        <a routerLink="/dashboard/create-auction" class="inline-block bg-white text-emerald-700 font-semibold px-6 py-3 rounded-lg shadow-md hover:bg-gray-100 transition">
+          Crear subasta
+        </a>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Subastas activas -->
+  <app-auction-list 
+    title="Subastas activas" 
+    subtitle="Ofertas disponibles ahora" 
+    [filters]="{status: 'ACTIVE'}"
+  ></app-auction-list>
+  
+  <!-- Subastas por categorías -->
+  <app-auction-list 
+    title="Electrónica" 
+    subtitle="Gadgets y dispositivos electrónicos" 
+    [filters]="{category: 'ELECTRONICS', status: 'ACTIVE'}"
+    [limit]="4"
+  ></app-auction-list>
+  
+  <app-auction-list 
+    title="Coleccionables" 
+    subtitle="Objetos únicos y de colección" 
+    [filters]="{category: 'COLLECTIBLES', status: 'ACTIVE'}"
+    [limit]="4"
+  ></app-auction-list>
 </div>

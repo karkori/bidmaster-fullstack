@@ -19,14 +19,34 @@ export class FormControlDirective implements OnInit {
   
   @HostListener('focus')
   onFocus(): void {
-    this.renderer.addClass(this.el.nativeElement, this.focusClasses);
-    this.renderer.addClass(this.el.nativeElement, this.getFocusColorClasses());
+    // Filtrar elementos vacíos que puedan aparecer después del split
+    const focusClasses = this.focusClasses.split(' ').filter(Boolean);
+    const colorClasses = this.getFocusColorClasses().split(' ').filter(Boolean);
+    
+    // Añadir clases solo si hay elementos en el array
+    if (focusClasses.length > 0) {
+      this.el.nativeElement.classList.add(...focusClasses);
+    }
+    
+    if (colorClasses.length > 0) {
+      this.el.nativeElement.classList.add(...colorClasses);
+    }
   }
   
   @HostListener('blur')
   onBlur(): void {
-    this.renderer.removeClass(this.el.nativeElement, this.focusClasses);
-    this.renderer.removeClass(this.el.nativeElement, this.getFocusColorClasses());
+    // Filtrar elementos vacíos que puedan aparecer después del split
+    const focusClasses = this.focusClasses.split(' ').filter(Boolean);
+    const colorClasses = this.getFocusColorClasses().split(' ').filter(Boolean);
+    
+    // Eliminar clases solo si hay elementos en el array
+    if (focusClasses.length > 0) {
+      this.el.nativeElement.classList.remove(...focusClasses);
+    }
+    
+    if (colorClasses.length > 0) {
+      this.el.nativeElement.classList.remove(...colorClasses);
+    }
   }
   
   @HostListener('input', ['$event'])

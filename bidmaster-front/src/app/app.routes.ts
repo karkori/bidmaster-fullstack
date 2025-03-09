@@ -13,6 +13,10 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/home/home.component')
       },
       {
+        path: 'auctions/:idOrSlug',
+        loadComponent: () => import('./pages/auction-detail/auction-detail-page.component')
+      },
+      {
         path: 'dashboard',
         component: DashboardLayoutComponent,
         canActivate: [authGuard],

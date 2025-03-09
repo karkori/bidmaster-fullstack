@@ -1,0 +1,156 @@
+<div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+  <!-- Cargando -->
+  <div *ngIf="loading" class="flex justify-center py-12">
+    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-500"></div>
+  </div>
+  
+  <!-- Error -->
+  <div *ngIf="error" class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded">
+    {{ error }}
+    <div class="mt-2">
+      <button routerLink="/" class="text-emerald-600 hover:underline">Volver al inicio</button>
+    </div>
+  </div>
+  
+  <!-- Contenido principal -->
+  <div *ngIf="!loading && !error && auction" class="space-y-8">
+    <!-- Encabezado -->
+    <div class="space-y-2">
+      <h1 class="text-3xl font-bold text-gray-900">{{ auction.title }}</h1>
+      <div class="flex items-center space-x-3 text-sm text-gray-500">
+        <span>{{ auction.category }}</span>
+        <span>•</span>
+        <span>ID: {{ auction.id }}</span>
+      </div>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <!-- Imagen y detalles -->
+      <div class="md:col-span-2 space-y-6">
+        <!-- Imagen principal -->
+        <div class="bg-gray-100 rounded-lg overflow-hidden h-96 flex items-center justify-center">
+          <img 
+            *ngIf="auction.images && auction.images.length > 0"
+            [src]="auction.images[0].url" 
+            [alt]="auction.title"
+            class="w-full h-full object-contain"
+          >
+          <div *ngIf="!auction.images || auction.images.length === 0" class="text-gray-400">
+            No hay imágenes disponibles
+          </div>
+        </div>
+        
+        <!-- Descripción -->
+        <div class="space-y-4">
+          <h2 class="text-xl font-bold text-gray-900">Descripción</h2>
+          <div class="prose max-w-none">
+            <p>{{ auction.description }}</p>
+          </div>
+        </div>
+        
+        <!-- Características -->
+        <div class="space-y-4">
+          <h2 class="text-xl font-bold text-gray-900">Características</h2>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="bg-gray-50 px-4 py-3 rounded-lg">
+              <span class="text-sm text-gray-500">Condición</span>
+              <p class="font-medium">{{ auction.condition }}</p>
+            </div>
+            <div class="bg-gray-50 px-4 py-3 rounded-lg">
+              <span class="text-sm text-gray-500">Vendedor</span>
+              <p class="font-medium">{{ auction.sellerUsername || 'No disponible' }}</p>
+            </div>
+            <div class="bg-gray-50 px-4 py-3 rounded-lg">
+              <span class="text-sm text-gray-500">Fecha de inicio</span>
+              <p class="font-medium">{{ auction.startDate ? formatDate(auction.startDate) : 'No disponible' }}</p>
+            </div>
+            <div class="bg-gray-50 px-4 py-3 rounded-lg">
+              <span class="text-sm text-gray-500">Fecha de fin</span>
+              <p class="font-medium">{{ auction.endDate ? formatDate(auction.endDate) : 'No disponible' }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Panel de puja -->
+      <div class="md:col-span-1">
+        <div class="bg-white rounded-lg shadow-md p-6 space-y-6 sticky top-4">
+          <!-- Precio actual -->
+          <div class="space-y-1">
+            <span class="text-sm text-gray-500">Precio actual</span>
+            <p class="text-3xl font-bold text-emerald-600">
+              {{ auction.currentPrice || auction.initialPrice | currency:'EUR' }}
+            </p>
+            <span class="text-sm text-gray-500">
+              {{ auction.totalBids || 0 }} pujas realizadas
+            </span>
+          </div>
+          
+          <!-- Tiempo restante -->
+          <div class="space-y-1">
+            <span class="text-sm text-gray-500">Tiempo restante</span>
+            <p class="text-lg font-semibold">{{ timeLeft }}</p>
+          </div>
+          
+          <!-- Incremento mínimo -->
+          <div class="text-sm text-gray-500">
+            Incremento mínimo: {{ auction.minBidIncrement | currency:'EUR' }}
+          </div>
+          
+          <!-- Opciones de envío -->
+          <div class="space-y-1">
+            <span class="text-sm text-gray-500">Opciones de envío</span>
+            <p>{{ auction.shippingOptions }}</p>
+          </div>
+          
+          <!-- Formulario de puja -->
+          <form *ngIf="!isOwner && auction.status === 'ACTIVE'" [formGroup]="bidForm" (ngSubmit)="submitBid()" class="space-y-4">
+            <div>
+              <label for="bidAmount" appFormLabel [required]="true">Tu puja (€)</label>
+              <input 
+                type="number" 
+                id="bidAmount" 
+                formControlName="amount" 
+                min="0.01" 
+                step="0.01" 
+                appFormControl
+                [controlStatus]="bidForm.get('amount')?.invalid && bidForm.get('amount')?.touched ? 'invalid' : 'default'"
+              >
+              <div *ngIf="bidForm.get('amount')?.invalid && bidForm.get('amount')?.touched" class="mt-1 text-sm text-red-600">
+                La puja debe ser mayor al precio actual más el incremento mínimo.
+              </div>
+            </div>
+            
+            <div *ngIf="bidError" class="text-sm text-red-600">{{ bidError }}</div>
+            
+            <button 
+              type="submit" 
+              [disabled]="bidForm.invalid || isSubmittingBid || !isAuthenticated"
+              class="w-full px-4 py-2 bg-emerald-600 text-white font-medium rounded-lg shadow hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50"
+            >
+              <span *ngIf="isSubmittingBid">Procesando...</span>
+              <span *ngIf="!isSubmittingBid">Hacer puja</span>
+            </button>
+            
+            <div *ngIf="!isAuthenticated" class="text-center text-sm text-gray-500">
+              Debes <a routerLink="/auth/login" class="text-emerald-600 hover:underline">iniciar sesión</a> para pujar
+            </div>
+          </form>
+          
+          <!-- Mensaje para propietario -->
+          <div *ngIf="isOwner" class="text-center text-sm text-gray-500 p-4 bg-gray-50 rounded-lg">
+            Eres el propietario de esta subasta
+          </div>
+          
+          <!-- Subasta finalizada -->
+          <div *ngIf="auction.status === 'COMPLETED'" class="text-center text-sm p-4 bg-gray-50 rounded-lg">
+            <span class="font-medium">Subasta finalizada</span>
+            <div *ngIf="auction.winnerId" class="mt-2">
+              Ganador: {{ auction.winnerUsername || 'No disponible' }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
