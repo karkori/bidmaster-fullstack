@@ -26,13 +26,24 @@ export interface Auction {
 }
 
 export interface AuctionImage {
-  id?: string;
-  auctionId?: string;
-  url: string;
-  description?: string;
-  isPrimary: boolean;
-  displayOrder?: number;
+  id:           string;
+  url:          string;
+  description:  null;
+  displayOrder: number;
+  fileName:     string;
+  contentType:  string;
+  fileSize:     number;
+  primary:      boolean;
 }
+
+// export interface AuctionImage {
+//   id?: string;
+//   auctionId?: string;
+//   url: string;
+//   description?: string;
+//   isPrimary: boolean;
+//   displayOrder?: number;
+// }
 
 export interface CreateAuctionDto {
   title: string;

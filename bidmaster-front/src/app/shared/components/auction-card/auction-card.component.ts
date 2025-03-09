@@ -33,7 +33,7 @@ export class AuctionCardComponent {
   
   // Obtener la URL de la imagen principal o una imagen por defecto
   get imageUrl(): string {
-    const primaryImage = this.auction.images?.find(img => img.isPrimary);
+    const primaryImage = this.auction.images?.find(img => img.primary);
     return primaryImage?.url || 'assets/images/no-image.png';
   }
 }
