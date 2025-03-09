@@ -20,6 +20,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import dev.mostapha.bidmaster.adapter.in.web.dto.AuctionImageDTO;
 import dev.mostapha.bidmaster.adapter.in.web.dto.AuctionResponseDTO;
 import dev.mostapha.bidmaster.adapter.in.web.dto.CreateAuctionRequestDTO;
 import dev.mostapha.bidmaster.adapter.in.web.dto.PlaceBidRequestDTO;
@@ -453,8 +458,23 @@ public class AuctionController {
             dto.setTimeLeftSeconds(0);
         }
 
-        // Por defecto, lista vacía de imágenes
-        dto.setImages(new ArrayList<>());
+        // Mapear las imágenes a DTOs
+        if (auction.getImages() != null) {
+            List<AuctionImageDTO> imageDTOs = auction.getImages().stream()
+                .map(image -> new AuctionImageDTO(
+                    image.getId(),
+                    image.getUrl(),
+                    image.getDescription(),
+                    image.isPrimary(),
+                    image.getDisplayOrder(),
+                    image.getFileName(),
+                    image.getContentType(),
+                    image.getFileSize()))
+                .collect(Collectors.toList());
+            dto.setImages(imageDTOs);
+        } else {
+            dto.setImages(Collections.emptyList());
+        }
 
         // Metadatos
         dto.setCreatedAt(auction.getCreatedAt());

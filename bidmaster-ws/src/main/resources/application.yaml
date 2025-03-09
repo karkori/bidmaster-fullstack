@@ -17,10 +17,9 @@ spring:
     url: jdbc:postgresql://localhost:5432/bidmaster
     user: postgres
     password: postgres
-    # baseline-on-migrate: true
+    baseline-on-migrate: true
     clean-disabled: false     # Permite la limpieza de la base de datos
-    # clean-on-validation-error: true  # Limpia si hay errores de validación
-    # clean: true              # Ejecuta flyway:clean al inicio
+    validate-on-migrate: true # Valida las migraciones antes de aplicarlas
     locations: classpath:db/migration # Ubicación de los scripts de migración
 
   sql:

@@ -27,7 +27,7 @@ public class AuctionImageService implements AuctionImageUseCase {
     @Override
     public Mono<AuctionImage> saveAuctionImage(AuctionImage image) {
         log.info("Guardando imagen para la subasta ID: {}", image.getAuctionId());
-        return auctionImageRepository.save(image);
+        return auctionImageRepository.insertAuctionImage(image);
     }
     
     @Override

@@ -140,4 +140,10 @@ public class AuctionImageRepositoryAdapter implements AuctionImageRepository {
         
         return "image/jpeg"; // Tipo por defecto
     }
+
+    @Override
+    public Mono<AuctionImage> insertAuctionImage(AuctionImage image) {
+        return imageRepository.insertAuctionImage(mapToEntity(image))
+                .map(this::mapToDomain);
+    } 
 }

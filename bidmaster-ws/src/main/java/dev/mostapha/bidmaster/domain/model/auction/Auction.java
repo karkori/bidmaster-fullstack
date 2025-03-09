@@ -3,7 +3,10 @@ package dev.mostapha.bidmaster.domain.model.auction;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
+
+
 
 /**
  * Entidad de dominio Subasta.
@@ -47,6 +50,7 @@ public class Auction {
     private final LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private long version;
+    private List<AuctionImage> images;
     
     /**
      * Constructor privado para crear una nueva subasta
@@ -316,8 +320,8 @@ public class Auction {
      */
     private String generateSlug(String title) {
         return title.toLowerCase()
-                .replaceAll("[^a-z0-9\\s]", "")
-                .replaceAll("\\s+", "-") 
+                .replaceAll("[^a-z0-9\s]", "")
+                .replaceAll("\s+", "-") 
                 + "-" + UUID.randomUUID().toString().substring(0, 8);
     }
     
@@ -540,5 +544,13 @@ public class Auction {
     
     public long getVersion() {
         return version;
+    }
+
+    public List<AuctionImage> getImages() {
+        return images;
+    }
+
+    public void setImages(List<AuctionImage> images) {
+        this.images = images;
     }
 }

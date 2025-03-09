@@ -45,4 +45,9 @@ public interface AuctionImageRepository {
      * Elimina todas las imágenes de una subasta
      */
     Mono<Void> deleteByAuctionId(UUID auctionId);
+
+    /**
+     * Inserta una nueva imagen de subasta
+     */
+    Mono<AuctionImage> insertAuctionImage(AuctionImage image);
 }

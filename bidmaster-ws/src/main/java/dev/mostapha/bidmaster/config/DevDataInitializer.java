@@ -10,11 +10,13 @@ import dev.mostapha.bidmaster.domain.model.user.Address;
 import dev.mostapha.bidmaster.domain.model.user.User;
 import dev.mostapha.bidmaster.domain.model.user.UserRole;
 import dev.mostapha.bidmaster.domain.model.user.UserStatus;
+import org.flywaydb.core.Flyway;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Profile;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -30,6 +32,7 @@ import java.util.UUID;
  */
 @Configuration
 @Profile("dev")
+@DependsOn("flyway")
 public class DevDataInitializer {
 
     private static final Logger log = LoggerFactory.getLogger(DevDataInitializer.class);
@@ -38,9 +41,19 @@ public class DevDataInitializer {
      * Bean que ejecuta la inicialización de datos al arrancar la aplicación.
      */
     @Bean
-    public CommandLineRunner initDevData(UserUseCase userUseCase, AuctionUseCase auctionUseCase, AuctionImageUseCase auctionImageUseCase) {
+    public CommandLineRunner initDevData(UserUseCase userUseCase, AuctionUseCase auctionUseCase, AuctionImageUseCase auctionImageUseCase, Flyway flyway) {
         return args -> {
             log.info("Inicializando datos de ejemplo para entorno de desarrollo...");
+            
+            // Asegurarse de que Flyway ha completado todas las migraciones
+            log.info("Verificando estado de las migraciones de base de datos...");
+            if (flyway != null) {
+                try {
+                    log.info("Estado de la migración: " + flyway.info().current().getVersion().toString());
+                } catch (Exception e) {
+                    log.warn("No se pudo obtener información sobre las migraciones: " + e.getMessage());
+                }
+            }
             
             // Crear usuarios de ejemplo
             createDemoUsers(userUseCase)
@@ -249,7 +262,7 @@ public class DevDataInitializer {
      */
     private Mono<Auction> addAuctionImages(Auction auction, AuctionImageUseCase auctionImageUseCase) {
         List<String> imageUrls;
-        
+        log.info("auction_id: {}    ", auction.getId());
         // Asignar URLs de imágenes según la categoría
         switch (auction.getCategory()) {
             case ELECTRONICS:
