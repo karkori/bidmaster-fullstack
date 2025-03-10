@@ -178,12 +178,47 @@ public class DevDataInitializer {
                 List<Auction> demoAuctions = List.of(
                     // Subasta de electrónica
                     Auction.create(
+                        "MacBook Pro 2025 - 16GB RAM",
+                        "Portátil MacBook Pro 2023 en excelente estado, con 16GB de RAM y 512GB SSD. " +
+                        "Incluye cargador original y funda protectora.",
+                        AuctionCategory.ELECTRONICS,
+                        new BigDecimal("4694.00"),
+                        LocalDateTime.now().plusDays(7),
+                        sellerId
+                    ),Auction.create(
+                        "MacBook Pro 2025 - 32GB RAM",
+                        "Portátil MacBook Pro 2023 en excelente estado, con 16GB de RAM y 512GB SSD. " +
+                        "Incluye cargador original y funda protectora.",
+                        AuctionCategory.ELECTRONICS,
+                        new BigDecimal("4646.00"),
+                        LocalDateTime.now().plusDays(7),
+                        sellerId
+                    ),
+                    Auction.create(
                         "MacBook Pro 2023 - 16GB RAM",
                         "Portátil MacBook Pro 2023 en excelente estado, con 16GB de RAM y 512GB SSD. " +
                         "Incluye cargador original y funda protectora.",
                         AuctionCategory.ELECTRONICS,
                         new BigDecimal("1200.00"),
-                        LocalDateTime.now().plusDays(7),
+                        LocalDateTime.now().plusDays(5),
+                        sellerId
+                    ),
+                    Auction.create(
+                        "MacBook Pro 2023 - 16GB RAM",
+                        "Portátil MacBook Pro 2023 en excelente estado, con 16GB de RAM y 512GB SSD. " +
+                        "Incluye cargador original y funda protectora.",
+                        AuctionCategory.ELECTRONICS,
+                        new BigDecimal("1200.00"),
+                        LocalDateTime.now().plusDays(4),
+                        sellerId
+                    ),
+                    Auction.create(
+                        "MacBook Pro 2023 - 16GB RAM",
+                        "Portátil MacBook Pro 2023 en excelente estado, con 16GB de RAM y 512GB SSD. " +
+                        "Incluye cargador original y funda protectora.",
+                        AuctionCategory.ELECTRONICS,
+                        new BigDecimal("1200.00"),
+                        LocalDateTime.now().plusDays(2),
                         sellerId
                     ),
                     

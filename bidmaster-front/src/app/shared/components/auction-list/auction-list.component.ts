@@ -1,9 +1,9 @@
-import { Component, Input, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AuctionCardComponent } from '../auction-card/auction-card.component';
-import { Auction, AuctionFilters } from '@shared/models/auction.model';
+import { Component, Input, OnInit, inject } from '@angular/core';
 import { AuctionService } from '@core/services/auction.service';
-import { Observable, catchError, of } from 'rxjs';
+import { Auction, AuctionFilters } from '@shared/models/auction.model';
+import { catchError, of } from 'rxjs';
+import { AuctionCardComponent } from '../auction-card/auction-card.component';
 
 @Component({
   selector: 'app-auction-list',
@@ -38,6 +38,7 @@ export class AuctionListComponent implements OnInit {
         })
       )
       .subscribe(auctions => {
+        console.log(`auctions: `,auctions);
         this.auctions = this.limit > 0 ? auctions.slice(0, this.limit) : auctions;
         this.loading = false;
       });
