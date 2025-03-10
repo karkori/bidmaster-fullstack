@@ -1,4 +1,4 @@
-package dev.mostapha.bidmaster.adapter.in.web.dto;
+package dev.mostapha.bidmaster.adapter.in.web.dto.request;
 
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;

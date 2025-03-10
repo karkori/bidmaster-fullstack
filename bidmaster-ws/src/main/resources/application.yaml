@@ -11,6 +11,8 @@ spring:
     pool:
       initial-size: 5
       max-size: 20
+    properties:
+      schema: public  # Especificar explícitamente el esquema
   # Configuración para Flyway (migraciones de base de datos)
   flyway:
     enabled: true
@@ -21,10 +23,17 @@ spring:
     clean-disabled: false     # Permite la limpieza de la base de datos
     validate-on-migrate: true # Valida las migraciones antes de aplicarlas
     locations: classpath:db/migration # Ubicación de los scripts de migración
+    schemas: public  # Especificar explícitamente el esquema
 
   sql:
     init:
       mode: always
+
+  # Asegurarse de que Flyway se ejecute antes de R2DBC
+  data:
+    r2dbc:
+      repositories:
+        enabled: true
 
 # Configuración de logging
 logging:
@@ -38,6 +47,12 @@ logging:
     dev:
       mostapha:
         bidmaster: DEBUG
+
+minio: 
+  endpoint: http://localhost:9000
+  access-key: minioadmin
+  secret-key: minioadmin
+  bucket: bidmaster
 
 server:
   port: 8080

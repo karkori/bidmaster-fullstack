@@ -1,8 +1,8 @@
 package dev.mostapha.bidmaster.adapter.in.web.mapper;
 
 import dev.mostapha.bidmaster.adapter.in.web.dto.AddressDTO;
-import dev.mostapha.bidmaster.adapter.in.web.dto.UserResponseDTO;
 import dev.mostapha.bidmaster.adapter.in.web.dto.request.UserRequestDTO;
+import dev.mostapha.bidmaster.adapter.in.web.dto.response.UserResponseDTO;
 import dev.mostapha.bidmaster.domain.model.user.Address;
 import dev.mostapha.bidmaster.domain.model.user.User;
 import dev.mostapha.bidmaster.domain.model.user.UserRole;

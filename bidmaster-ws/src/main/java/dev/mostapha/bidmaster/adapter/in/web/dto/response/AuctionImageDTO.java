@@ -1,4 +1,4 @@
-package dev.mostapha.bidmaster.adapter.in.web.dto;
+package dev.mostapha.bidmaster.adapter.in.web.dto.response;
 
 import java.util.UUID;
 
