@@ -17,10 +17,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import dev.mostapha.bidmaster.adapter.in.web.dto.BalanceOperationDTO;
-import dev.mostapha.bidmaster.adapter.in.web.dto.UserResponseDTO;
 import dev.mostapha.bidmaster.adapter.in.web.dto.request.LoginRequestDTO;
 import dev.mostapha.bidmaster.adapter.in.web.dto.request.UserRequestDTO;
 import dev.mostapha.bidmaster.adapter.in.web.dto.response.LoginResponseDTO;
+import dev.mostapha.bidmaster.adapter.in.web.dto.response.UserResponseDTO;
 import dev.mostapha.bidmaster.adapter.in.web.mapper.UserMapper;
 import dev.mostapha.bidmaster.application.port.in.UserUseCase;
 import dev.mostapha.bidmaster.domain.model.user.UserStatus;

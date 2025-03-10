@@ -1,8 +1,10 @@
-package dev.mostapha.bidmaster.adapter.in.web.dto;
+package dev.mostapha.bidmaster.adapter.in.web.dto.response;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
+
+import dev.mostapha.bidmaster.adapter.in.web.dto.AddressDTO;
 
 /**
  * DTO para enviar respuestas de usuarios.

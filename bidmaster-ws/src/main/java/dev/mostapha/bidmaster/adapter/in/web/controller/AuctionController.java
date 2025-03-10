@@ -2,10 +2,12 @@ package dev.mostapha.bidmaster.adapter.in.web.controller;
 
 import java.security.Principal;
 import java.time.Duration;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,14 +22,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import dev.mostapha.bidmaster.adapter.in.web.dto.AuctionImageDTO;
-import dev.mostapha.bidmaster.adapter.in.web.dto.AuctionResponseDTO;
-import dev.mostapha.bidmaster.adapter.in.web.dto.CreateAuctionRequestDTO;
-import dev.mostapha.bidmaster.adapter.in.web.dto.PlaceBidRequestDTO;
+import dev.mostapha.bidmaster.adapter.in.web.dto.request.CreateAuctionRequestDTO;
+import dev.mostapha.bidmaster.adapter.in.web.dto.request.PlaceBidRequestDTO;
+import dev.mostapha.bidmaster.adapter.in.web.dto.response.AuctionImageDTO;
+import dev.mostapha.bidmaster.adapter.in.web.dto.response.AuctionResponseDTO;
 import dev.mostapha.bidmaster.application.port.in.AuctionUseCase;
 import dev.mostapha.bidmaster.application.port.in.UserUseCase;
 import dev.mostapha.bidmaster.domain.model.auction.Auction;
@@ -58,7 +56,7 @@ public class AuctionController {
     public Mono<ResponseEntity<AuctionResponseDTO>> createAuction(
             @Valid @RequestBody CreateAuctionRequestDTO requestDTO,
             Principal principal) {
-        String username = "femtonet"; // TO-DO: remove this when JWT is implemented
+        String username = "admin"; // TO-DO: remove this when JWT is implemented
         if (principal != null) {
             username = principal.getName();
         }
@@ -81,7 +79,7 @@ public class AuctionController {
                             });
                 })
                 // if user not found
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "El usuario no existe")));
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("El usuario %s no existe", username))));
     }
 
     /**
