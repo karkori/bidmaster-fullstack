@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import dev.mostapha.bidmaster.application.port.in.AuctionUseCase;
@@ -12,6 +14,8 @@ import dev.mostapha.bidmaster.application.port.out.AuctionImageRepository;
 import dev.mostapha.bidmaster.application.port.out.AuctionRepository;
 import dev.mostapha.bidmaster.domain.model.auction.Auction;
 import dev.mostapha.bidmaster.domain.model.auction.AuctionStatus;
+import dev.mostapha.bidmaster.domain.model.image.Image;
+import dev.mostapha.bidmaster.infrastructure.persistence.repositories.ImageRepository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -22,13 +26,18 @@ import reactor.core.publisher.Mono;
 @Service
 public class AuctionService implements AuctionUseCase {
 
+    private final Logger log = LoggerFactory.getLogger(AuctionService.class);
+
     private final AuctionRepository auctionRepository;
     private final AuctionImageRepository auctionImageRepository;
+    private final ImageRepository imageRepository;
 
-    public AuctionService(AuctionRepository auctionRepository,
-            AuctionImageRepository auctionImageRepository) {
+    public AuctionService(AuctionRepository auctionRepository, 
+                         AuctionImageRepository auctionImageRepository,
+                         ImageRepository imageRepository) {
         this.auctionRepository = auctionRepository;
         this.auctionImageRepository = auctionImageRepository;
+        this.imageRepository = imageRepository;
     }
 
     @Override
@@ -195,17 +204,72 @@ public class AuctionService implements AuctionUseCase {
                 });
     }
 
+    @Override
+    public Mono<Boolean> associateImageWithAuction(UUID imageId, UUID auctionId) {
+        log.info("Asociando imagen {} con subasta {}", imageId, auctionId);
+        
+        // Verificar primero que la subasta existe
+        return auctionRepository.findById(auctionId)
+            .flatMap(auction -> {
+                // Actualizar la referencia en la imagen
+                return imageRepository.findById(imageId)
+                    .flatMap(imageEntity -> {
+                        imageEntity.setReferenceId(auctionId);
+                        imageEntity.setType("AUCTION");
+                        log.info("Actualizando imagen {} para asociarla con subasta {}", imageId, auctionId);
+                        return imageRepository.save(imageEntity);
+                    })
+                    .thenReturn(true)
+                    .onErrorResume(e -> {
+                        log.error("Error al actualizar la imagen {}: {}", imageId, e.getMessage());
+                        return Mono.just(false);
+                    });
+            })
+            .defaultIfEmpty(false)
+            .onErrorResume(e -> {
+                log.error("No se pudo asociar la imagen: error al buscar la subasta {}: {}", auctionId, e.getMessage());
+                return Mono.just(false);
+            });
+    }
+
     private Mono<Auction> setAuctionImages(Auction auction) {
+        if (auction == null) {
+            log.error("La subasta es nula en setAuctionImages");
+            return Mono.empty();
+        }
+        
+        log.info("Cargando imágenes para la subasta con ID: {}", auction.getId());
+        
         // Inicializamos una lista vacía para evitar NullPointerException
         auction.setImages(new ArrayList<>());
         
-        // Cargar las imágenes de forma reactiva
-        return auctionImageRepository.findByAuctionId(auction.getId())
-            .collectList()
-            .map(images -> {
-                auction.setImages(images);
-                return auction;
+        // Cargar las imágenes desde la tabla 'images' usando reference_id y type='AUCTION'
+        return imageRepository.findByReferenceIdAndType(auction.getId(), Image.ImageType.AUCTION.name())
+            .doOnNext(entity -> {
+                log.info("Imagen encontrada para subasta {}: {}", auction.getId(), entity.getObjectName());
+                log.info("Detalles de la imagen - ID: {}, URL: {}, Type: {}", 
+                    entity.getId(), entity.getObjectName(), entity.getType());
             })
-            .defaultIfEmpty(auction);
+            .map(entity -> {
+                // Convertir la entidad a un objeto de dominio AuctionImage
+                return dev.mostapha.bidmaster.domain.model.auction.AuctionImage.create(
+                    auction.getId(),
+                    entity.getObjectName(), // URL como la imagen
+                    entity.getFilename(),
+                    entity.getContentType(),
+                    entity.getSize()
+                );
+            })
+            .collectList()
+            .doOnNext(images -> {
+                if (images.isEmpty()) {
+                    log.warn("No se encontraron imágenes para la subasta {}", auction.getId());
+                } else {
+                    log.info("Se encontraron {} imágenes para la subasta {}", images.size(), auction.getId());
+                    auction.setImages(images);
+                    log.info("Imágenes asignadas a la subasta: {}", images.size());
+                }
+            })
+            .thenReturn(auction);
     }
 }

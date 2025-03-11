@@ -52,7 +52,9 @@ minio:
   endpoint: http://localhost:9000
   access-key: minioadmin
   secret-key: minioadmin
-  bucket: bidmaster
+  bucket: bidmaster-images
+  port: 9000
+  secure: false
 
 server:
   port: 8080

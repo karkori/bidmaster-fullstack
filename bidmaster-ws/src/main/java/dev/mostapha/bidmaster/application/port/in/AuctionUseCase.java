@@ -30,6 +30,14 @@ public interface AuctionUseCase {
     Mono<Auction> findAuctionBySlug(String slug);
     
     /**
+     * Asocia una imagen existente con una subasta
+     * @param imageId ID de la imagen a asociar
+     * @param auctionId ID de la subasta a la que asociar la imagen
+     * @return true si la asociación fue exitosa, false en caso contrario
+     */
+    Mono<Boolean> associateImageWithAuction(UUID imageId, UUID auctionId);
+    
+    /**
      * Busca subastas según filtros aplicados
      * @param filters Mapa de filtros (categoría, estado, rango de precios, etc.)
      */

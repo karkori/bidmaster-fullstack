@@ -12,7 +12,6 @@ import dev.mostapha.bidmaster.application.port.out.ImageStoragePort;
 import dev.mostapha.bidmaster.application.port.out.SecurityScanPort;
 import dev.mostapha.bidmaster.domain.model.image.Image;
 import dev.mostapha.bidmaster.domain.model.image.Image.ImageType;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -72,7 +71,7 @@ public class ImageService implements ImageUseCase {
                     String objectName = tuple.getT1();
                     String thumbnailObjectName = tuple.getT2();
 
-                    // Crear entidad de dominio
+                    // Crear entidad de dominio con un ID nuevo cada vez
                     Image image = Image.create(
                             extractFilename(filename),
                             filename,
@@ -85,7 +84,7 @@ public class ImageService implements ImageUseCase {
                             type,
                             referenceId);
 
-                    // Persistir metadatos
+                    // Persistir metadatos (simple)
                     return imageRepositoryPort.save(image);
                 })
                 .doOnSuccess(image -> log.info("Imagen procesada y almacenada exitosamente: id={}", image.getId()))

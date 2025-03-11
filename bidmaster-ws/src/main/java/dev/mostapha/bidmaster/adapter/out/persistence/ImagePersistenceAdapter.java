@@ -3,6 +3,7 @@ package dev.mostapha.bidmaster.adapter.out.persistence;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.stereotype.Component;
 
 import dev.mostapha.bidmaster.application.port.out.ImageRepositoryPort;
@@ -19,11 +20,14 @@ import reactor.core.publisher.Mono;
 public class ImagePersistenceAdapter implements ImageRepositoryPort {
 
     private final ImageRepository imageRepository;
+    private final R2dbcEntityTemplate template;
     
     @Override
     public Mono<Image> save(Image image) {
         ImageEntity entity = toEntity(image);
-        return imageRepository.save(entity)
+        
+        // Forzar inserción usando R2dbcEntityTemplate
+        return template.insert(entity)
                 .map(this::toDomainModel);
     }
     

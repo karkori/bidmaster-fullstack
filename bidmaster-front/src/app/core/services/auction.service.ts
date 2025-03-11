@@ -66,4 +66,14 @@ export class AuctionService {
   placeBid(auctionId: string, amount: number): Observable<Auction> {
     return this.http.post<Auction>(`${this.apiUrl}/${auctionId}/bids`, { amount });
   }
+
+  // Recargar una subasta para asegurar que las relaciones estén actualizadas
+  reloadAuction(id: string): Observable<Auction> {
+    return this.http.get<Auction>(`${this.apiUrl}/${id}/reload`);
+  }
+
+  // Asociar imágenes a una subasta existente
+  associateImagesToAuction(auctionId: string, imageIds: string[]): Observable<Auction> {
+    return this.http.post<Auction>(`${this.apiUrl}/${auctionId}/associate-images`, imageIds);
+  }
 }

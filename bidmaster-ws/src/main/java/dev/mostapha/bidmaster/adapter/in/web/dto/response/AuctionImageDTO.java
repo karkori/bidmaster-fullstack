@@ -2,8 +2,6 @@ package dev.mostapha.bidmaster.adapter.in.web.dto.response;
 
 import java.util.UUID;
 
-import lombok.Data;
-
 /**
  * DTO para la información de una imagen de subasta
  */

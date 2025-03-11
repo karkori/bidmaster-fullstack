@@ -15,7 +15,7 @@ import io.r2dbc.spi.ConnectionFactory;
  * y habilitar los repositorios R2DBC
  */
 @Configuration
-@EnableR2dbcRepositories(basePackages = "dev.mostapha.bidmaster.adapter.out.persistence.repository")
+@EnableR2dbcRepositories(basePackages = "dev.mostapha.bidmaster.infrastructure.persistence.repositories")
 public class R2dbcConfig extends AbstractR2dbcConfiguration {
 
     private final ConnectionFactory connectionFactory;
@@ -24,7 +24,6 @@ public class R2dbcConfig extends AbstractR2dbcConfiguration {
         this.connectionFactory = connectionFactory;
     }
 
-    @SuppressWarnings("null")
     @Override
     public ConnectionFactory connectionFactory() {
         return connectionFactory;

@@ -36,15 +36,6 @@ export interface AuctionImage {
   primary:      boolean;
 }
 
-// export interface AuctionImage {
-//   id?: string;
-//   auctionId?: string;
-//   url: string;
-//   description?: string;
-//   isPrimary: boolean;
-//   displayOrder?: number;
-// }
-
 export interface CreateAuctionDto {
   title: string;
   description: string;
@@ -56,6 +47,7 @@ export interface CreateAuctionDto {
   condition: string;
   shippingOptions: string;
   allowPause?: boolean;
+  images?: string[];
 }
 
 export interface AuctionFilters {

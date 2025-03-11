@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Version;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
@@ -56,6 +55,7 @@ public class ImageEntity {
     @Column
     private UUID referenceId;
     
-    @Version
+    // @Version comentada para evitar problemas de bloqueo optimista
+    // @Version
     private Long version;
 }

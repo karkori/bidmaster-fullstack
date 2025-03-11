@@ -1,10 +1,11 @@
 package dev.mostapha.bidmaster.adapter.out.security;
 
-import java.io.ByteArrayInputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -14,6 +15,7 @@ import dev.mostapha.bidmaster.application.port.out.SecurityScanPort;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import lombok.extern.slf4j.Slf4j;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import reactor.netty.Connection;
@@ -33,6 +35,7 @@ public class ClamAVSecurityAdapter implements SecurityScanPort {
     private int clamavPort;
 
     private static final String CLEAN_RESPONSE = "OK";
+    private static final String STREAM_PREFIX = "stream: ";
     private static final int CHUNK_SIZE = 4096;
     private static final String INSTREAM_CMD = "zINSTREAM\0";
 
@@ -71,8 +74,18 @@ public class ClamAVSecurityAdapter implements SecurityScanPort {
                 .then()
                 .then(Mono.defer(() -> connection.inbound().receive().aggregate().asString()))
                 .map(response -> {
-                    boolean isClean = response.endsWith(CLEAN_RESPONSE);
-                    log.info("Resultado de escaneo: {}", isClean ? "Limpio" : "Infectado - " + response);
+                    // Log completo de la respuesta para diagnóstico
+                    log.debug("Respuesta completa de ClamAV: '{}'", response);
+                    
+                    // Eliminar posibles espacios, saltos de línea, etc.
+                    String cleanedResponse = response.trim();
+                    
+                    // Verificar si contiene "OK" al final o "stream: OK" en cualquier lugar
+                    boolean isClean = cleanedResponse.endsWith(CLEAN_RESPONSE) || 
+                                     (cleanedResponse.contains(STREAM_PREFIX) && 
+                                      cleanedResponse.contains(STREAM_PREFIX + CLEAN_RESPONSE));
+                    
+                    log.info("Resultado de escaneo: {}", isClean ? "Limpio" : "Infectado - " + cleanedResponse);
                     return isClean;
                 })
                 .doFinally(signalType -> {
@@ -87,28 +100,44 @@ public class ClamAVSecurityAdapter implements SecurityScanPort {
     }
 
     private Mono<Void> sendFileChunks(Connection connection, byte[] fileData) {
-        return Mono.fromCallable(() -> {
-            try (ByteArrayInputStream inputStream = new ByteArrayInputStream(fileData)) {
-                byte[] buffer = new byte[CHUNK_SIZE];
-                int bytesRead;
+        // Dividir los datos en chunks
+        return Flux.fromIterable(chunkifyData(fileData))
+                .concatMap(chunk -> {
+                    // Enviar primero el tamaño del chunk
+                    ByteBuf sizeBuf = Unpooled.wrappedBuffer(
+                            ByteBuffer.allocate(4).putInt(chunk.length).array());
 
-                while ((bytesRead = inputStream.read(buffer)) > 0) {
-                    // Preparar el buffer con el tamaño del fragmento
-                    ByteBuf sizeBuf = Unpooled.wrappedBuffer(ByteBuffer.allocate(4).putInt(bytesRead).array());
-                    connection.outbound().send(Mono.just(sizeBuf)).then().block();
+                    // Luego enviar el contenido del chunk
+                    ByteBuf dataBuf = Unpooled.wrappedBuffer(chunk);
 
-                    // Enviar el fragmento de datos
-                    ByteBuf dataBuf = Unpooled.wrappedBuffer(buffer, 0, bytesRead);
-                    connection.outbound().send(Mono.just(dataBuf)).then().block();
-                }
-
-                // Enviar tamaño cero para indicar fin de datos
-                ByteBuf endBuf = Unpooled.wrappedBuffer(new byte[] { 0, 0, 0, 0 });
-                return connection.outbound().send(Mono.just(endBuf)).then();
-            }
-        })
-                .subscribeOn(Schedulers.boundedElastic())
-                .flatMap(mono -> mono);
+                    // Encadenar las operaciones de forma reactiva
+                    return connection.outbound().send(Mono.just(sizeBuf))
+                            .then(connection.outbound().send(Mono.just(dataBuf)))
+                            .then();
+                })
+                .then(Mono.defer(() -> {
+                    // Enviar un chunk de tamaño cero al final para indicar que terminamos
+                    ByteBuf endBuf = Unpooled.wrappedBuffer(new byte[] { 0, 0, 0, 0 });
+                    return connection.outbound().send(Mono.just(endBuf)).then();
+                }));
+    }
+    
+    /**
+     * Divide un array de bytes en chunks de tamaño fijo
+     */
+    private List<byte[]> chunkifyData(byte[] data) {
+        List<byte[]> chunks = new ArrayList<>();
+        int offset = 0;
+        
+        while (offset < data.length) {
+            int chunkSize = Math.min(CHUNK_SIZE, data.length - offset);
+            byte[] chunk = new byte[chunkSize];
+            System.arraycopy(data, offset, chunk, 0, chunkSize);
+            chunks.add(chunk);
+            offset += chunkSize;
+        }
+        
+        return chunks;
     }
 
     @Override

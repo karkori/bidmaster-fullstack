@@ -1,5 +1,6 @@
 package dev.mostapha.bidmaster.adapter.in.web.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -11,14 +12,18 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 
 import dev.mostapha.bidmaster.adapter.in.web.dto.response.ImageResponseDTO;
+import dev.mostapha.bidmaster.application.port.in.AuctionImageUseCase;
 import dev.mostapha.bidmaster.application.port.in.ImageUseCase;
+import dev.mostapha.bidmaster.application.port.in.UserUseCase;
 import dev.mostapha.bidmaster.application.port.out.ImageStoragePort;
+import dev.mostapha.bidmaster.domain.model.auction.AuctionImage;
 import dev.mostapha.bidmaster.domain.model.image.Image;
 import dev.mostapha.bidmaster.domain.model.image.Image.ImageType;
 import lombok.RequiredArgsConstructor;
@@ -34,8 +39,153 @@ public class ImageController {
 
     private final ImageUseCase imageUseCase;
     private final ImageStoragePort imageStoragePort;
+    private final UserUseCase userUseCase;
+    private final AuctionImageUseCase auctionImageUseCase;
     
     private static final int DEFAULT_URL_EXPIRY = 3600; // 1 hora
+    
+    @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Mono<ResponseEntity<ImageResponseDTO>> uploadImageSimplified(
+            @RequestPart("file") FilePart filePart,
+            @RequestParam(value = "referenceId", required = false) UUID referenceId,
+            @RequestParam(value = "type", defaultValue = "AUCTION") String imageTypeStr,
+            @RequestHeader(value = "X-Username", defaultValue = "admin@bidmaster.dev") String username) {
+        
+        ImageType imageType;
+        try {
+            imageType = ImageType.valueOf(imageTypeStr.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return Mono.just(ResponseEntity.badRequest().body(null));
+        }
+        
+        return userUseCase.findUserByUsername(username)
+                .flatMap(user -> uploadImageInternal(filePart, imageType, referenceId, user.getId())
+                        .flatMap(response -> {
+                            // Si es una imagen para subasta y tenemos el referenceId, asociamos la imagen
+                            if (imageType == ImageType.AUCTION && referenceId != null) {
+                                ImageResponseDTO img = response.getBody();
+                                if (img != null) {
+                                    // Crear una imagen de subasta
+                                    AuctionImage auctionImage = AuctionImage.create(
+                                        referenceId, 
+                                        img.getImageUrl(), 
+                                        img.getFilename(), 
+                                        img.getContentType(), 
+                                        img.getSize()
+                                    );
+                                    
+                                    return auctionImageUseCase.saveAuctionImage(auctionImage)
+                                        .doOnNext(savedImage -> log.info("Imagen asociada a subasta: {}", savedImage.getId()))
+                                        .thenReturn(response);
+                                }
+                            }
+                            return Mono.just(response);
+                        }))
+                .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()));
+    }
+    
+    @PostMapping(value = "/upload-multiple", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Mono<ResponseEntity<List<ImageResponseDTO>>> uploadMultipleImages(
+            @RequestPart("files") List<FilePart> fileParts,
+            @RequestParam(value = "referenceId", required = false) UUID referenceId,
+            @RequestParam(value = "type", defaultValue = "AUCTION") String imageTypeStr,
+            @RequestHeader(value = "X-Username", defaultValue = "admin") String username) {
+        
+        ImageType imageType;
+        try {
+            imageType = ImageType.valueOf(imageTypeStr.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return Mono.just(ResponseEntity.badRequest().body(null));
+        }
+        
+        return userUseCase.findUserByUsername(username)
+                .flatMap(user -> {
+                    List<Mono<ImageResponseDTO>> uploads = new ArrayList<>();
+                    
+                    for (FilePart filePart : fileParts) {
+                        uploads.add(uploadImageInternal(filePart, imageType, referenceId, user.getId())
+                                .map(response -> {
+                                    // Ya no necesitamos hacer nada adicional aquí, ya que la imagen
+                                    // ya se guarda con el referenceId en la tabla images por uploadImageInternal
+                                    log.info("Imagen subida correctamente: {}", response.getBody());
+                                    return response.getBody();
+                                }));
+                    }
+                    
+                    return Flux.concat(uploads)
+                            .collectList()
+                            .map(ResponseEntity::ok);
+                })
+                .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()));
+    }
+    
+    @GetMapping("/user")
+    public Flux<ImageResponseDTO> getCurrentUserImages(
+            @RequestHeader(value = "X-Username", defaultValue = "admin@bidmaster.dev") String username,
+            @RequestParam(value = "type", defaultValue = "AUCTION") String typeStr) {
+        
+        ImageType imageType;
+        try {
+            imageType = ImageType.valueOf(typeStr.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return Flux.error(new IllegalArgumentException("Tipo de imagen no válido"));
+        }
+        return userUseCase.findUserByUsername(username)
+                .flatMapMany(user -> imageUseCase.getImagesByReference(user.getId(), imageType)
+                        .flatMap(image -> Mono.zip(
+                                Mono.just(image),
+                                imageStoragePort.getPublicUrl(image.getObjectName(), image.getBucketName()),
+                                imageStoragePort.getPublicUrl(image.getThumbnailObjectName(), image.getBucketName())
+                        ))
+                        .map(tuple -> {
+                            Image image = tuple.getT1();
+                            String imageUrl = tuple.getT2();
+                            String thumbnailUrl = tuple.getT3();
+                            
+                            return ImageResponseDTO.fromDomain(image, imageUrl, thumbnailUrl);
+                        }));
+    }
+    
+    private Mono<ResponseEntity<ImageResponseDTO>> uploadImageInternal(
+            FilePart filePart, 
+            ImageType imageType, 
+            UUID referenceId, 
+            UUID userId) {
+        
+        return filePart.content()
+                .reduce(new byte[0], (acc, dataBuffer) -> {
+                    byte[] data = new byte[dataBuffer.readableByteCount()];
+                    dataBuffer.read(data);
+                    byte[] newAcc = new byte[acc.length + data.length];
+                    System.arraycopy(acc, 0, newAcc, 0, acc.length);
+                    System.arraycopy(data, 0, newAcc, acc.length, data.length);
+                    return newAcc;
+                })
+                .flatMap(bytes -> imageUseCase.storeImage(
+                        bytes, 
+                        filePart.filename(), 
+                        filePart.headers().getContentType().toString(),
+                        userId,
+                        imageType,
+                        referenceId))
+                .flatMap(image -> Mono.zip(
+                        Mono.just(image),
+                        imageStoragePort.getPublicUrl(image.getObjectName(), image.getBucketName()),
+                        imageStoragePort.getPublicUrl(image.getThumbnailObjectName(), image.getBucketName())
+                ))
+                .map(tuple -> {
+                    Image image = tuple.getT1();
+                    String imageUrl = tuple.getT2();
+                    String thumbnailUrl = tuple.getT3();
+                    
+                    return ResponseEntity.status(HttpStatus.CREATED)
+                            .body(ImageResponseDTO.fromDomain(image, imageUrl, thumbnailUrl));
+                })
+                .onErrorResume(e -> {
+                    log.error("Error al procesar la imagen", e);
+                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null));
+                });
+    }
     
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public Mono<ResponseEntity<ImageResponseDTO>> uploadImage(

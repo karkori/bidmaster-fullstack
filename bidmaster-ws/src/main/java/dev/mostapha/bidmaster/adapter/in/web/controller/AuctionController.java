@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -43,6 +45,7 @@ public class AuctionController {
 
     private final AuctionUseCase auctionUseCase;
     private final UserUseCase userUseCase;
+    private static final Logger log = LoggerFactory.getLogger(AuctionController.class);
 
     public AuctionController(AuctionUseCase auctionUseCase, UserUseCase userUseCase) {
         this.auctionUseCase = auctionUseCase;
@@ -339,6 +342,53 @@ public class AuctionController {
                 .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));
     }
 
+    /**
+     * Recarga una subasta y asegura que sus relaciones (como imágenes) estén actualizadas
+     *
+     * @param id ID de la subasta a recargar
+     * @return La subasta actualizada
+     */
+    @GetMapping("/{id}/reload")
+    public Mono<ResponseEntity<AuctionResponseDTO>> reloadAuction(@PathVariable UUID id) {
+        return auctionUseCase.findAuctionById(id)
+                .map(auction -> {
+                    AuctionResponseDTO dto = convertToDTO(auction);
+                    return ResponseEntity.ok(dto);
+                })
+                .defaultIfEmpty(ResponseEntity.notFound().build());
+    }
+
+    /**
+     * Endpoint para asociar imágenes a una subasta existente
+     */
+    @PostMapping("/{id}/associate-images")
+    public Mono<ResponseEntity<AuctionResponseDTO>> associateImagesToAuction(
+            @PathVariable UUID id,
+            @RequestBody List<UUID> imageIds) {
+        
+        log.info("Asociando {} imágenes a la subasta ID: {}", imageIds.size(), id);
+        
+        // Implementar la lógica para actualizar el referenceId de cada imagen
+        Flux<Boolean> updateResults = Flux.fromIterable(imageIds)
+            .flatMap(imageId -> {
+                log.info("Actualizando referenceId para imagen ID: {}", imageId);
+                return auctionUseCase.associateImageWithAuction(imageId, id);
+            });
+        
+        return updateResults
+            .collectList()
+            .flatMap(results -> {
+                log.info("Resultados de actualización de imágenes: {}", results);
+                // Obtener la subasta actualizada con sus imágenes
+                return auctionUseCase.findAuctionById(id)
+                    .map(auction -> ResponseEntity.ok(convertToDTO(auction)));
+            })
+            .onErrorResume(e -> {
+                log.error("Error al asociar imágenes con la subasta: {}", e.getMessage());
+                return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null));
+            });
+    }
+
     // Métodos auxiliares para convertir entre entidades y DTOs
 
     /**
@@ -457,20 +507,27 @@ public class AuctionController {
         }
 
         // Mapear las imágenes a DTOs
+        log.info("Mapeando imágenes para subasta {}", auction.getId());
         if (auction.getImages() != null) {
+            log.info("Subasta {} tiene {} imágenes", auction.getId(), auction.getImages().size());
             List<AuctionImageDTO> imageDTOs = auction.getImages().stream()
-                .map(image -> new AuctionImageDTO(
-                    image.getId(),
-                    image.getUrl(),
-                    image.getDescription(),
-                    image.isPrimary(),
-                    image.getDisplayOrder(),
-                    image.getFileName(),
-                    image.getContentType(),
-                    image.getFileSize()))
+                .map(image -> {
+                    log.info("Mapeando imagen: id={}, url={}", image.getId(), image.getUrl());
+                    return new AuctionImageDTO(
+                        image.getId(),
+                        image.getUrl(),
+                        image.getDescription(),
+                        image.isPrimary(),
+                        image.getDisplayOrder(),
+                        image.getFileName(),
+                        image.getContentType(),
+                        image.getFileSize());
+                })
                 .collect(Collectors.toList());
             dto.setImages(imageDTOs);
+            log.info("Se han mapeado {} imágenes para la subasta {}", imageDTOs.size(), auction.getId());
         } else {
+            log.warn("La subasta {} no tiene imágenes (images=null)", auction.getId());
             dto.setImages(Collections.emptyList());
         }
 
