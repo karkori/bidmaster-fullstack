@@ -1,5 +1,4 @@
-import { Component, Input } from '@angular/core';
-
+import { Component, computed, input } from '@angular/core';
 
 type StatusType = 'success' | 'warning' | 'danger' | 'info' | 'primary' | 'secondary';
 
@@ -10,11 +9,11 @@ type StatusType = 'success' | 'warning' | 'danger' | 'info' | 'primary' | 'secon
   templateUrl: './status-badge.component.html'
 })
 export default class StatusBadgeComponent {
-  @Input() status: StatusType = 'primary';
-  @Input() text: string = '';
+  status = input<StatusType>('primary');
+  text = input<string>('');
   
-  get badgeClasses(): string {
-    switch (this.status) {
+  badgeClasses = computed(() => {
+    switch (this.status()) {
       case 'success':
         return 'bg-green-100 text-green-800';
       case 'warning':
@@ -28,5 +27,5 @@ export default class StatusBadgeComponent {
       default: // primary
         return 'bg-indigo-100 text-indigo-800';
     }
-  }
+  });
 }

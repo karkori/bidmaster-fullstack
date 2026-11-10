@@ -1,5 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
-
+import { Component, computed, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 interface FilterOption {
@@ -14,16 +13,16 @@ interface FilterOption {
   templateUrl: './filter-bar.component.html'
 })
 export default class FilterBarComponent {
-  @Input() filterOptions: FilterOption[] = [];
-  @Input() currentFilter: string = 'all';
-  @Input() searchPlaceholder: string = 'Buscar...';
-  @Input() color: 'blue' | 'pink' | 'green' | 'indigo' = 'blue';
+  filterOptions = input<FilterOption[]>([]);
+  currentFilter = input<string>('all');
+  searchPlaceholder = input<string>('Buscar...');
+  color = input<'blue' | 'pink' | 'green' | 'indigo'>('blue');
   
-  @Output() filterChange = new EventEmitter<string>();
-  @Output() searchChange = new EventEmitter<string>();
+  filterChange = output<string>();
+  searchChange = output<string>();
   
-  get colorClasses(): string {
-    switch (this.color) {
+  colorClasses = computed(() => {
+    switch (this.color()) {
       case 'pink':
         return 'bg-pink-50 border-pink-100 text-pink-800 hover:bg-pink-100';
       case 'green':
@@ -33,10 +32,10 @@ export default class FilterBarComponent {
       default: // blue
         return 'bg-blue-50 border-blue-100 text-blue-800 hover:bg-blue-100';
     }
-  }
+  });
   
-  get activeButtonClasses(): string {
-    switch (this.color) {
+  activeButtonClasses = computed(() => {
+    switch (this.color()) {
       case 'pink':
         return 'bg-pink-100';
       case 'green':
@@ -46,7 +45,7 @@ export default class FilterBarComponent {
       default: // blue
         return 'bg-blue-100';
     }
-  }
+  });
   
   onFilterClick(value: string): void {
     this.filterChange.emit(value);

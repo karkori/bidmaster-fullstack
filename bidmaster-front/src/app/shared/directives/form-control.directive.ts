@@ -1,17 +1,18 @@
-import { Directive, ElementRef, Input, OnInit, Renderer2, HostListener } from '@angular/core';
+import { Directive, ElementRef, OnInit, Renderer2, HostListener, inject, input, model } from '@angular/core';
 
 @Directive({
   selector: '[appFormControl]',
   standalone: true
 })
 export class FormControlDirective implements OnInit {
-  @Input() controlSize: 'sm' | 'md' | 'lg' = 'md';
-  @Input() controlStatus: 'default' | 'invalid' | 'valid' | 'disabled' = 'default';
+  controlSize = input<'sm' | 'md' | 'lg'>('md');
+  controlStatus = model<'default' | 'invalid' | 'valid' | 'disabled'>('default');
   
   private readonly baseClasses = 'block w-full rounded-md border transition-all duration-200';
   private readonly focusClasses = 'ring-2 ring-offset-0';
   
-  constructor(private el: ElementRef, private renderer: Renderer2) {}
+  private el = inject(ElementRef);
+  private renderer = inject(Renderer2);
   
   ngOnInit(): void {
     this.applyStyles();
@@ -19,11 +20,9 @@ export class FormControlDirective implements OnInit {
   
   @HostListener('focus')
   onFocus(): void {
-    // Filtrar elementos vacíos que puedan aparecer después del split
     const focusClasses = this.focusClasses.split(' ').filter(Boolean);
     const colorClasses = this.getFocusColorClasses().split(' ').filter(Boolean);
     
-    // Añadir clases solo si hay elementos en el array
     if (focusClasses.length > 0) {
       this.el.nativeElement.classList.add(...focusClasses);
     }
@@ -35,11 +34,9 @@ export class FormControlDirective implements OnInit {
   
   @HostListener('blur')
   onBlur(): void {
-    // Filtrar elementos vacíos que puedan aparecer después del split
     const focusClasses = this.focusClasses.split(' ').filter(Boolean);
     const colorClasses = this.getFocusColorClasses().split(' ').filter(Boolean);
     
-    // Eliminar clases solo si hay elementos en el array
     if (focusClasses.length > 0) {
       this.el.nativeElement.classList.remove(...focusClasses);
     }
@@ -49,15 +46,15 @@ export class FormControlDirective implements OnInit {
     }
   }
   
-  @HostListener('input', ['$event'])
-  onInput(event: any): void {
+  @HostListener('input')
+  onInput(): void {
     const isValid = this.el.nativeElement.validity.valid;
     const isEmpty = !this.el.nativeElement.value;
     
     if (isEmpty) {
-      this.controlStatus = 'default';
+      this.controlStatus.set('default');
     } else {
-      this.controlStatus = isValid ? 'valid' : 'invalid';
+      this.controlStatus.set(isValid ? 'valid' : 'invalid');
     }
     
     this.applyStyles();
@@ -94,7 +91,7 @@ export class FormControlDirective implements OnInit {
   }
   
   private getSizeClasses(): string {
-    switch (this.controlSize) {
+    switch (this.controlSize()) {
       case 'sm':
         return 'px-2 py-1 text-sm';
       case 'lg':
@@ -105,7 +102,7 @@ export class FormControlDirective implements OnInit {
   }
   
   private getStatusClasses(): string {
-    switch (this.controlStatus) {
+    switch (this.controlStatus()) {
       case 'invalid':
         return 'border-red-500 shadow-sm focus:border-red-500 focus:shadow-sm';
       case 'valid':
@@ -118,7 +115,7 @@ export class FormControlDirective implements OnInit {
   }
   
   private getFocusColorClasses(): string {
-    switch (this.controlStatus) {
+    switch (this.controlStatus()) {
       case 'invalid':
         return 'ring-red-200';
       case 'valid':

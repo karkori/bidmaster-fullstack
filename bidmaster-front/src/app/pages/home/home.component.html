@@ -21,18 +21,30 @@
     [filters]="{status: 'ACTIVE'}"
   ></app-auction-list>
   
-  <!-- Subastas por categorías -->
-  <app-auction-list 
-    title="Electrónica" 
-    subtitle="Gadgets y dispositivos electrónicos" 
-    [filters]="{category: 'ELECTRONICS', status: 'ACTIVE'}"
-    [limit]="4"
-  ></app-auction-list>
+  <!-- Subastas por categorías diferidas en viewport -->
+  @defer (on viewport) {
+    <app-auction-list 
+      title="Electrónica" 
+      subtitle="Gadgets y dispositivos electrónicos" 
+      [filters]="{category: 'ELECTRONICS', status: 'ACTIVE'}"
+      [limit]="4"
+    ></app-auction-list>
+  } @placeholder {
+    <div class="h-48 flex items-center justify-center bg-gray-50 rounded-lg border border-dashed border-gray-200">
+      <span class="text-sm text-gray-400">Cargando subastas de electrónica al desplazarse...</span>
+    </div>
+  }
   
-  <app-auction-list 
-    title="Coleccionables" 
-    subtitle="Objetos únicos y de colección" 
-    [filters]="{category: 'COLLECTIBLES', status: 'ACTIVE'}"
-    [limit]="4"
-  ></app-auction-list>
+  @defer (on viewport) {
+    <app-auction-list 
+      title="Coleccionables" 
+      subtitle="Objetos únicos y de colección" 
+      [filters]="{category: 'COLLECTIBLES', status: 'ACTIVE'}"
+      [limit]="4"
+    ></app-auction-list>
+  } @placeholder {
+    <div class="h-48 flex items-center justify-center bg-gray-50 rounded-lg border border-dashed border-gray-200">
+      <span class="text-sm text-gray-400">Cargando subastas de coleccionables al desplazarse...</span>
+    </div>
+  }
 </div>

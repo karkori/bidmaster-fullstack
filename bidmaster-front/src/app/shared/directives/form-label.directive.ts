@@ -1,14 +1,15 @@
-import { Directive, ElementRef, Input, OnInit, Renderer2 } from '@angular/core';
+import { Directive, ElementRef, OnInit, Renderer2, inject, input } from '@angular/core';
 
 @Directive({
   selector: '[appFormLabel]',
   standalone: true
 })
 export class FormLabelDirective implements OnInit {
-  @Input() required = false;
-  @Input() size: 'sm' | 'md' | 'lg' = 'md';
+  required = input<boolean>(false);
+  size = input<'sm' | 'md' | 'lg'>('md');
   
-  constructor(private el: ElementRef, private renderer: Renderer2) {}
+  private el = inject(ElementRef);
+  private renderer = inject(Renderer2);
   
   ngOnInit(): void {
     // Aplicar clases base
@@ -22,7 +23,7 @@ export class FormLabelDirective implements OnInit {
     this.renderer.addClass(this.el.nativeElement, sizeClass);
     
     // Añadir indicador de requerido si es necesario
-    if (this.required) {
+    if (this.required()) {
       const requiredSpan = this.renderer.createElement('span');
       const text = this.renderer.createText(' *');
       this.renderer.addClass(requiredSpan, 'text-red-500');
@@ -32,7 +33,7 @@ export class FormLabelDirective implements OnInit {
   }
   
   private getSizeClass(): string {
-    switch (this.size) {
+    switch (this.size()) {
       case 'sm':
         return 'text-xs';
       case 'lg':

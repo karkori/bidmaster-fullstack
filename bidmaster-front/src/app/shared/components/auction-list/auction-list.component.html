@@ -1,34 +1,34 @@
 <section class="space-y-4">
-  @if (title) {
+  @if (title()) {
     <div class="space-y-1">
-      <h2 class="text-2xl font-bold text-gray-900">{{ title }}</h2>
-      @if (subtitle) {
-        <p class="text-gray-600">{{ subtitle }}</p>
+      <h2 class="text-2xl font-bold text-gray-900">{{ title() }}</h2>
+      @if (subtitle()) {
+        <p class="text-gray-600">{{ subtitle() }}</p>
       }
     </div>
   }
 
-  @if (loading) {
+  @if (loading()) {
     <div class="flex justify-center py-8">
       <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-500"></div>
     </div>
   }
 
-  @if (error) {
+  @if (error()) {
     <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded">
-      {{ error }}
+      {{ error() }}
     </div>
   }
 
-  @if (!loading && !error && auctions.length === 0) {
+  @if (!loading() && !error() && auctions().length === 0) {
     <div class="text-center py-8">
       <p class="text-gray-500">No se encontraron subastas.</p>
     </div>
   }
 
-  @if (!loading && auctions.length > 0) {
+  @if (!loading() && auctions().length > 0) {
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-      @for (auction of auctions; track auction) {
+      @for (auction of auctions(); track auction.id || auction.slug || $index) {
         <app-auction-card [auction]="auction"></app-auction-card>
       }
     </div>

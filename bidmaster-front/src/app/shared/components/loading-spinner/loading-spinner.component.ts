@@ -1,5 +1,4 @@
-import { Component, Input } from '@angular/core';
-
+import { Component, computed, input } from '@angular/core';
 
 @Component({
   selector: 'app-loading-spinner',
@@ -8,12 +7,12 @@ import { Component, Input } from '@angular/core';
   templateUrl: './loading-spinner.component.html'
 })
 export default class LoadingSpinnerComponent {
-  @Input() size: 'sm' | 'md' | 'lg' = 'md';
-  @Input() color: 'blue' | 'pink' | 'green' | 'indigo' = 'blue';
-  @Input() message: string = 'Cargando...';
+  size = input<'sm' | 'md' | 'lg'>('md');
+  color = input<'blue' | 'pink' | 'green' | 'indigo'>('blue');
+  message = input<string>('Cargando...');
   
-  get sizeClasses(): string {
-    switch (this.size) {
+  sizeClasses = computed(() => {
+    switch (this.size()) {
       case 'sm':
         return 'h-6 w-6';
       case 'lg':
@@ -21,10 +20,10 @@ export default class LoadingSpinnerComponent {
       default: // md
         return 'h-8 w-8';
     }
-  }
+  });
   
-  get colorClasses(): string {
-    switch (this.color) {
+  colorClasses = computed(() => {
+    switch (this.color()) {
       case 'pink':
         return 'border-pink-600';
       case 'green':
@@ -34,5 +33,5 @@ export default class LoadingSpinnerComponent {
       default: // blue
         return 'border-blue-600';
     }
-  }
+  });
 }

@@ -1,5 +1,4 @@
-import { Component, Input } from '@angular/core';
-
+import { Component, computed, input } from '@angular/core';
 
 @Component({
   selector: 'app-page-header',
@@ -8,12 +7,12 @@ import { Component, Input } from '@angular/core';
   templateUrl: './page-header.component.html'
 })
 export default class PageHeaderComponent {
-  @Input() title: string = '';
-  @Input() subtitle: string = '';
-  @Input() color: 'blue' | 'pink' | 'green' | 'indigo' = 'blue';
+  title = input<string>('');
+  subtitle = input<string>('');
+  color = input<'blue' | 'pink' | 'green' | 'indigo'>('blue');
   
-  get colorClasses(): string {
-    switch (this.color) {
+  colorClasses = computed(() => {
+    switch (this.color()) {
       case 'pink':
         return 'from-pink-600 to-pink-800';
       case 'green':
@@ -23,5 +22,5 @@ export default class PageHeaderComponent {
       default: // blue
         return 'from-blue-700 to-blue-900';
     }
-  }
+  });
 }

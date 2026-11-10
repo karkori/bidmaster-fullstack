@@ -1,5 +1,4 @@
-import { Component, Input } from '@angular/core';
-
+import { Component, computed, input } from '@angular/core';
 
 @Component({
   selector: 'app-empty-state',
@@ -8,12 +7,12 @@ import { Component, Input } from '@angular/core';
   templateUrl: './empty-state.component.html'
 })
 export default class EmptyStateComponent {
-  @Input() title: string = 'No hay elementos';
-  @Input() message: string = 'No se encontraron elementos para mostrar.';
-  @Input() icon: 'default' | 'heart' | 'auction' | 'message' | 'notification' = 'default';
+  title = input<string>('No hay elementos');
+  message = input<string>('No se encontraron elementos para mostrar.');
+  icon = input<'default' | 'heart' | 'auction' | 'message' | 'notification'>('default');
   
-  get svgPath(): string {
-    switch (this.icon) {
+  svgPath = computed(() => {
+    switch (this.icon()) {
       case 'heart':
         return 'M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z';
       case 'auction':
@@ -25,5 +24,5 @@ export default class EmptyStateComponent {
       default:
         return 'M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z';
     }
-  }
+  });
 }

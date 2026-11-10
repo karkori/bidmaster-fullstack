@@ -1,5 +1,5 @@
 
-import { Component, Input, OnInit, inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, inject, input, signal, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { AuctionService } from '@core/services/auction.service';
 import { Auction, AuctionFilters } from '@shared/models/auction.model';
@@ -13,14 +13,14 @@ import { AuctionCardComponent } from '../auction-card/auction-card.component';
   templateUrl: './auction-list.component.html'
 })
 export class AuctionListComponent implements OnInit {
-  @Input() title: string = 'Subastas';
-  @Input() subtitle: string = '';
-  @Input() filters?: AuctionFilters;
-  @Input() limit: number = 0;
+  title = input<string>('Subastas');
+  subtitle = input<string>('');
+  filters = input<AuctionFilters | undefined>(undefined);
+  limit = input<number>(0);
   
-  auctions: Auction[] = [];
-  loading: boolean = true;
-  error: string | null = null;
+  auctions = signal<Auction[]>([]);
+  loading = signal<boolean>(true);
+  error = signal<string | null>(null);
   
   private auctionService = inject(AuctionService);
   private platformId = inject(PLATFORM_ID);
@@ -31,22 +31,22 @@ export class AuctionListComponent implements OnInit {
   
   loadAuctions(): void {
     if (!isPlatformBrowser(this.platformId)) {
-      this.loading = false;
+      this.loading.set(false);
       return;
     }
-    this.loading = true;
-    this.auctionService.findAuctions(this.filters)
+    this.loading.set(true);
+    this.auctionService.findAuctions(this.filters())
       .pipe(
         catchError(err => {
-          this.error = 'Error al cargar las subastas. Por favor, inténtalo de nuevo.';
+          this.error.set('Error al cargar las subastas. Por favor, inténtalo de nuevo.');
           console.error('Error cargando subastas:', err);
           return of([]);
         })
       )
       .subscribe(auctions => {
-        console.log(`auctions: `,auctions);
-        this.auctions = this.limit > 0 ? auctions.slice(0, this.limit) : auctions;
-        this.loading = false;
+        const lim = this.limit();
+        this.auctions.set(lim > 0 ? auctions.slice(0, lim) : auctions);
+        this.loading.set(false);
       });
   }
 }

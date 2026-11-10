@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, computed, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { Auction } from '@shared/models/auction.model';
@@ -11,14 +11,14 @@ import { differenceInDays, differenceInHours, differenceInMinutes, isPast } from
   templateUrl: './auction-card.component.html'
 })
 export class AuctionCardComponent {
-  @Input() auction!: Auction;
+  auction = input.required<Auction>();
   
-  // Calcular tiempo restante para la subasta usando date-fns
-  get timeLeft(): string {
-    if (!this.auction.endDate) return 'Finalizada';
+  // Calcular tiempo restante para la subasta usando date-fns y signals
+  timeLeft = computed(() => {
+    const auc = this.auction();
+    if (!auc.endDate) return 'Finalizada';
     
-    const endDate = new Date(this.auction.endDate);
-    
+    const endDate = new Date(auc.endDate);
     if (isPast(endDate)) return 'Finalizada';
     
     const now = new Date();
@@ -29,11 +29,11 @@ export class AuctionCardComponent {
     if (days > 0) return `${days}d ${hours}h`;
     if (hours > 0) return `${hours}h ${minutes}m`;
     return `${minutes}m`;
-  }
+  });
   
   // Obtener la URL de la imagen principal o una imagen por defecto
-  get imageUrl(): string {
-    const primaryImage = this.auction.images?.find(img => img.primary);
+  imageUrl = computed(() => {
+    const primaryImage = this.auction().images?.find(img => img.primary);
     return primaryImage?.url || 'assets/images/no-image.png';
-  }
+  });
 }

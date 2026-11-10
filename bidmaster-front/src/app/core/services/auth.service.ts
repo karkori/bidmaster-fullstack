@@ -1,4 +1,4 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject, PLATFORM_ID } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { User } from '@shared/models/user.model';
@@ -9,6 +9,10 @@ import { isPlatformBrowser } from '@angular/common';
   providedIn: 'root'
 })
 export class AuthService {
+  private http = inject(HttpClient);
+  private platformId = inject(PLATFORM_ID);
+  private isBrowser = isPlatformBrowser(this.platformId);
+
   // Usamos signals en lugar de BehaviorSubject
   private currentUserSignal = signal<User | null>(null);
   
@@ -21,13 +25,8 @@ export class AuthService {
   }
   
   private apiUrl = `${environment.apiUrl}/users`;
-  
-  private isBrowser: boolean;
 
-  constructor(private http: HttpClient) {
-    // Verificar si estamos en un navegador
-    this.isBrowser = typeof window !== 'undefined';
-    
+  constructor() {
     // Intentar recuperar el usuario del localStorage al iniciar (solo en navegador)
     if (this.isBrowser) {
       const storedUser = localStorage.getItem('currentUser');
