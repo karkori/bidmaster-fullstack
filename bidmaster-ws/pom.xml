@@ -16,7 +16,7 @@
 	<description>BidMaster Web Service - Modernized Hexagonal Architecture</description>
 
 	<properties>
-		<java.version>17</java.version>
+		<java.version>25</java.version>
 		<minio.version>8.5.17</minio.version>
 		<jjwt.version>0.12.6</jjwt.version>
 		<karate.version>1.5.2</karate.version>
