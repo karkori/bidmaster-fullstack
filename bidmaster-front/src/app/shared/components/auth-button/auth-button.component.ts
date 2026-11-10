@@ -7,16 +7,17 @@ import { AuthService } from '@core/services/auth.service';
   selector: 'app-auth-button',
   imports: [RouterLink],
   template: `
-    <div class="flex items-center space-x-4">
+    <div class="flex items-center space-x-2 sm:space-x-3">
       @if (authService.isLoggedIn()) {
         <button 
           routerLink="/dashboard/create-auction"
-          class="mr-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2 transition-all duration-300 flex items-center gap-2"
+          class="rounded-xl bg-emerald-600 px-2.5 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-white shadow-xs hover:bg-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2 transition-all flex items-center gap-1.5"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
           </svg>
-          Crear subasta
+          <span class="hidden sm:inline">Crear subasta</span>
+          <span class="sm:hidden">+ Subasta</span>
         </button>
       }
 
@@ -25,29 +26,33 @@ import { AuthService } from '@core/services/auth.service';
           <button
             type="button"
             (click)="toggleDropdown()"
-            class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2"
+            class="rounded-xl bg-blue-600 px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-white shadow-xs hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 transition-all flex items-center gap-1.5"
           >
-            Inicia sesión / Registrar
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-4 h-4">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+            </svg>
+            <span class="hidden sm:inline">Inicia sesión / Registrar</span>
+            <span class="sm:hidden">Ingresar</span>
           </button>
           
           @if (isDropdownOpen()) {
-            <div class="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg focus:outline-none">
+            <div class="absolute right-0 z-50 mt-2 w-56 origin-top-right rounded-xl bg-white shadow-lg ring-1 ring-black/5 focus:outline-none">
               <div class="py-1" role="none">
                 <a
                   routerLink="/auth/login"
                   (click)="closeDropdown()"
-                  class="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-100"
+                  class="block px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600"
                   role="menuitem"
                 >
                   Iniciar sesión
                 </a>
                 
-                <hr class="my-1 border-gray-200">
+                <hr class="my-1 border-gray-100">
                 
                 <a
                   routerLink="/auth/register"
                   (click)="closeDropdown()"
-                  class="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-100"
+                  class="block px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600"
                   role="menuitem"
                 >
                   Registrarse
@@ -61,17 +66,17 @@ import { AuthService } from '@core/services/auth.service';
           <button
             type="button"
             (click)="toggleUserMenu()"
-            class="flex items-center space-x-2 rounded-lg bg-gradient-to-r from-blue-700 to-blue-500 px-4 py-2 text-sm font-medium text-white shadow-md hover:from-blue-600 hover:to-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 transition-all duration-300"
+            class="flex items-center space-x-1.5 sm:space-x-2 rounded-xl bg-gradient-to-r from-blue-700 to-blue-500 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-white shadow-xs hover:from-blue-600 hover:to-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 transition-all"
           >
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-1.5 sm:gap-2">
               <div class="bg-white/20 p-1 rounded-full">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
-                  stroke-width="1.5"
+                  stroke-width="1.8"
                   stroke="currentColor"
-                  class="h-5 w-5"
+                  class="h-4 w-4 sm:h-5 sm:w-5"
                 >
                   <path
                     stroke-linecap="round"
@@ -80,8 +85,8 @@ import { AuthService } from '@core/services/auth.service';
                   />
                 </svg>
               </div>
-              <span class="font-bold">{{ authService.currentUserValue?.username }}</span>
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
+              <span class="font-bold max-w-[80px] sm:max-w-xs truncate">{{ authService.currentUserValue?.username }}</span>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
               </svg>
             </div>
