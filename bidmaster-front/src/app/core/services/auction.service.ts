@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Auction, AuctionFilters, CreateAuctionDto } from '@shared/models/auction.model';
 import { Observable } from 'rxjs';
@@ -28,23 +28,17 @@ export class AuctionService {
 
   // Buscar subastas con filtros
   findAuctions(filters?: AuctionFilters): Observable<Auction[]> {
-    let url = this.apiUrl;
+    let params = new HttpParams();
     
     if (filters) {
-      const params = new URLSearchParams();
-      
-      if (filters.category) params.append('category', filters.category);
-      if (filters.status) params.append('status', filters.status);
-      if (filters.minPrice) params.append('minPrice', filters.minPrice.toString());
-      if (filters.maxPrice) params.append('maxPrice', filters.maxPrice.toString());
-      if (filters.sellerId) params.append('sellerId', filters.sellerId);
-      
-      if (params.toString()) {
-        url += `?${params.toString()}`;
-      }
+      if (filters.category) params = params.set('category', filters.category);
+      if (filters.status) params = params.set('status', filters.status);
+      if (filters.minPrice !== undefined && filters.minPrice !== null) params = params.set('minPrice', filters.minPrice.toString());
+      if (filters.maxPrice !== undefined && filters.maxPrice !== null) params = params.set('maxPrice', filters.maxPrice.toString());
+      if (filters.sellerId) params = params.set('sellerId', filters.sellerId);
     }
     
-    return this.http.get<Auction[]>(url);
+    return this.http.get<Auction[]>(this.apiUrl, { params });
   }
 
   // Actualizar una subasta

@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { FormControlDirective, FormLabelDirective } from '@shared/directives';
 import { Router } from '@angular/router';
@@ -10,11 +10,10 @@ import { CreateAuctionDto } from '@shared/models/auction.model';
   selector: 'app-create-auction',
   standalone: true,
   imports: [
-    CommonModule, 
     ReactiveFormsModule,
     FormControlDirective,
     FormLabelDirective
-  ],
+],
   templateUrl: './create-auction.component.html'
 })
 export default class CreateAuctionComponent {

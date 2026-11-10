@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, OnInit, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '@core/services/auth.service';
@@ -10,9 +10,8 @@ import ProfileComponent from '../../../components/profile/profile.component';
   selector: 'app-profile-page',
   standalone: true,
   imports: [
-    CommonModule,
     ProfileComponent
-  ],
+],
   template: `
     <div class="container mx-auto px-4 py-6">
       <app-profile></app-profile>

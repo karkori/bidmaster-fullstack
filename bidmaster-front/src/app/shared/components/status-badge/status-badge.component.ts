@@ -1,12 +1,12 @@
 import { Component, Input } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 
 type StatusType = 'success' | 'warning' | 'danger' | 'info' | 'primary' | 'secondary';
 
 @Component({
   selector: 'app-status-badge',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './status-badge.component.html'
 })
 export default class StatusBadgeComponent {

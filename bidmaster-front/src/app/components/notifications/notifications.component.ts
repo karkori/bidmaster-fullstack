@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 
 interface Notification {
   id: string;
@@ -13,7 +13,7 @@ interface Notification {
 @Component({
   selector: 'app-notifications',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './notifications.component.html'
 })
 export default class NotificationsComponent implements OnInit {

@@ -49,9 +49,12 @@ export class AuthService {
   login(credentials: { username: string; password: string }): Observable<User> {
     return this.http.post<User>(`${this.apiUrl}/login`, credentials).pipe(
       tap(user => {
-        // Guardar usuario en localStorage (solo en navegador) y actualizar el signal
+        // Guardar usuario y token en localStorage (solo en navegador) y actualizar el signal
         if (this.isBrowser) {
           localStorage.setItem('currentUser', JSON.stringify(user));
+          if (user.token) {
+            localStorage.setItem('auth_token', user.token);
+          }
         }
         this.currentUserSignal.set(user);
       })
@@ -59,9 +62,10 @@ export class AuthService {
   }
   
   logout(): void {
-    // Eliminar usuario del localStorage (solo en navegador) y actualizar el signal
+    // Eliminar usuario y token del localStorage (solo en navegador) y actualizar el signal
     if (this.isBrowser) {
       localStorage.removeItem('currentUser');
+      localStorage.removeItem('auth_token');
     }
     this.currentUserSignal.set(null);
   }

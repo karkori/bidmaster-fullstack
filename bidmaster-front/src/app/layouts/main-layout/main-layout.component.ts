@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import { HeaderComponent } from '@layouts/header/header.component';
@@ -7,7 +7,7 @@ import { CategoryNavComponent } from '@shared/components/category-nav/category-n
 @Component({
   selector: 'app-main-layout',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, HeaderComponent, CategoryNavComponent],
+  imports: [RouterOutlet, HeaderComponent, CategoryNavComponent],
   template: `
     <div class="min-h-screen bg-gray-50">
       <app-header />

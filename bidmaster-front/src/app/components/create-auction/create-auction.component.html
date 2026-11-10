@@ -2,7 +2,7 @@
   <div class="bg-white rounded-lg shadow-md overflow-hidden">
     <div
       class="p-6 bg-gradient-to-r from-emerald-600 to-emerald-800 text-white"
-    >
+      >
       <h1 class="text-2xl font-bold">Crear nueva subasta</h1>
       <p class="opacity-80">
         Publica tu artículo para que otros usuarios pujen por él
@@ -23,10 +23,10 @@
                 formControlName="title"
                 appFormControl
                 [controlStatus]="auctionForm.get('title')?.invalid && auctionForm.get('title')?.touched ? 'invalid' : 'default'"
-              />
+                />
               @if (auctionForm.get('title')?.invalid &&
-              auctionForm.get('title')?.touched) {
-              <p class="mt-1 text-sm text-red-600">El título es obligatorio</p>
+                auctionForm.get('title')?.touched) {
+                <p class="mt-1 text-sm text-red-600">El título es obligatorio</p>
               }
             </div>
 
@@ -40,11 +40,11 @@
                 [controlStatus]="auctionForm.get('description')?.invalid && auctionForm.get('description')?.touched ? 'invalid' : 'default'"
               ></textarea>
               @if (auctionForm.get('description')?.invalid &&
-              auctionForm.get('description')?.touched) {
-              <p class="mt-1 text-sm text-red-600">
-                La descripción es obligatoria y debe tener al menos 20
-                caracteres
-              </p>
+                auctionForm.get('description')?.touched) {
+                <p class="mt-1 text-sm text-red-600">
+                  La descripción es obligatoria y debe tener al menos 20
+                  caracteres
+                </p>
               }
             </div>
 
@@ -55,7 +55,7 @@
                 formControlName="category"
                 appFormControl
                 [controlStatus]="auctionForm.get('category')?.invalid && auctionForm.get('category')?.touched ? 'invalid' : 'default'"
-              >
+                >
                 <option value="">Selecciona una categoría</option>
                 <option value="electronics">Electrónica</option>
                 <option value="fashion">Moda</option>
@@ -68,8 +68,8 @@
                 <option value="others">Otros</option>
               </select>
               @if (auctionForm.get('category')?.invalid &&
-              auctionForm.get('category')?.touched) {
-              <p class="mt-1 text-sm text-red-600">Selecciona una categoría</p>
+                auctionForm.get('category')?.touched) {
+                <p class="mt-1 text-sm text-red-600">Selecciona una categoría</p>
               }
             </div>
           </div>
@@ -89,12 +89,12 @@
                 step="0.01"
                 appFormControl
                 [controlStatus]="auctionForm.get('initialPrice')?.invalid && auctionForm.get('initialPrice')?.touched ? 'invalid' : 'default'"
-              />
+                />
               @if (auctionForm.get('initialPrice')?.invalid &&
-              auctionForm.get('initialPrice')?.touched) {
-              <p class="mt-1 text-sm text-red-600">
-                El precio inicial debe ser mayor que 0
-              </p>
+                auctionForm.get('initialPrice')?.touched) {
+                <p class="mt-1 text-sm text-red-600">
+                  El precio inicial debe ser mayor que 0
+                </p>
               }
             </div>
 
@@ -107,7 +107,7 @@
                 min="0"
                 step="0.01"
                 appFormControl
-              />
+                />
               <p class="mt-1 text-xs text-gray-500">
                 Precio mínimo para que la venta se concrete (opcional)
               </p>
@@ -121,12 +121,12 @@
                 formControlName="endDate"
                 appFormControl
                 [controlStatus]="auctionForm.get('endDate')?.invalid && auctionForm.get('endDate')?.touched ? 'invalid' : 'default'"
-              />
+                />
               @if (auctionForm.get('endDate')?.invalid &&
-              auctionForm.get('endDate')?.touched) {
-              <p class="mt-1 text-sm text-red-600">
-                Selecciona una fecha y hora válida
-              </p>
+                auctionForm.get('endDate')?.touched) {
+                <p class="mt-1 text-sm text-red-600">
+                  Selecciona una fecha y hora válida
+                </p>
               }
             </div>
 
@@ -139,7 +139,7 @@
                 min="0.01"
                 step="0.01"
                 appFormControl
-              />
+                />
               <p class="mt-1 text-xs text-gray-500">
                 Cantidad mínima que debe aumentar cada puja
               </p>
@@ -153,143 +153,145 @@
           <div class="mb-6">
             <label class="block text-sm font-medium text-gray-700 mb-2"
               >Sube imágenes de tu artículo</label
-            >
-            <div
-              class="border-2 border-dashed border-gray-300 rounded-md p-6 text-center"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="1.5"
-                stroke="currentColor"
-                class="mx-auto h-12 w-12 text-gray-400"
               >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"
-                />
-              </svg>
-              <div class="mt-2">
-                <p class="text-sm text-gray-500">PNG, JPG, GIF hasta 5MB</p>
-              </div>
-              <div class="mt-3">
-                <label
-                  for="file-upload"
-                  class="relative cursor-pointer rounded-md bg-white font-medium text-emerald-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-emerald-500 focus-within:ring-offset-2 hover:text-emerald-500"
+              <div
+                class="border-2 border-dashed border-gray-300 rounded-md p-6 text-center"
                 >
-                  <span>Subir archivos</span>
-                  <input
-                    id="file-upload"
-                    name="file-upload"
-                    type="file"
-                    class="sr-only"
-                    multiple
-                    accept="image/*"
-                  />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.5"
+                  stroke="currentColor"
+                  class="mx-auto h-12 w-12 text-gray-400"
+                  >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"
+                    />
+                </svg>
+                <div class="mt-2">
+                  <p class="text-sm text-gray-500">PNG, JPG, GIF hasta 5MB</p>
+                </div>
+                <div class="mt-3">
+                  <label
+                    for="file-upload"
+                    class="relative cursor-pointer rounded-md bg-white font-medium text-emerald-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-emerald-500 focus-within:ring-offset-2 hover:text-emerald-500"
+                    >
+                    <span>Subir archivos</span>
+                    <input
+                      id="file-upload"
+                      name="file-upload"
+                      type="file"
+                      class="sr-only"
+                      multiple
+                      accept="image/*"
+                      />
+                  </label>
+                </div>
+                <p class="text-xs text-gray-500 mt-2">
+                  Arrastra y suelta archivos aquí, o haz clic para seleccionar
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-4 border-t border-gray-200">
+            <h3 class="text-lg font-medium mb-4">Condiciones</h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div>
+                <label for="condition" appFormLabel [required]="true">Estado del artículo</label>
+                <select
+                  id="condition"
+                  formControlName="condition"
+                  appFormControl
+                  [controlStatus]="auctionForm.get('condition')?.invalid && auctionForm.get('condition')?.touched ? 'invalid' : 'default'"
+                  >
+                  <option value="">Selecciona un estado</option>
+                  <option value="new">Nuevo</option>
+                  <option value="like_new">Como nuevo</option>
+                  <option value="good">Buen estado</option>
+                  <option value="fair">Estado aceptable</option>
+                  <option value="poor">Necesita reparación</option>
+                </select>
+                @if (auctionForm.get('condition')?.invalid &&
+                  auctionForm.get('condition')?.touched) {
+                  <p class="mt-1 text-sm text-red-600">
+                    Selecciona el estado del artículo
+                  </p>
+                }
+              </div>
+
+              <div>
+                <label for="shippingOptions" appFormLabel [required]="true">Opciones de envío</label>
+                <select
+                  id="shippingOptions"
+                  formControlName="shippingOptions"
+                  appFormControl
+                  [controlStatus]="auctionForm.get('shippingOptions')?.invalid && auctionForm.get('shippingOptions')?.touched ? 'invalid' : 'default'"
+                  >
+                  <option value="">Selecciona una opción</option>
+                  <option value="seller_pays">El vendedor paga el envío</option>
+                  <option value="buyer_pays">El comprador paga el envío</option>
+                  <option value="pickup_only">Solo recogida en persona</option>
+                </select>
+                @if (auctionForm.get('shippingOptions')?.invalid &&
+                  auctionForm.get('shippingOptions')?.touched) {
+                  <p class="mt-1 text-sm text-red-600">
+                    Selecciona una opción de envío
+                  </p>
+                }
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-4 border-t border-gray-200">
+            <div class="flex items-center">
+              <input
+                id="terms"
+                formControlName="terms"
+                type="checkbox"
+                class="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+                />
+              <label for="terms" class="ml-2 block text-sm text-gray-900">
+                Acepto los
+                <a href="#" class="text-emerald-600 hover:text-emerald-500"
+                  >Términos y Condiciones</a
+                  >
+                  para la publicación de subastas
                 </label>
               </div>
-              <p class="text-xs text-gray-500 mt-2">
-                Arrastra y suelta archivos aquí, o haz clic para seleccionar
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div class="pt-4 border-t border-gray-200">
-          <h3 class="text-lg font-medium mb-4">Condiciones</h3>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div>
-              <label for="condition" appFormLabel [required]="true">Estado del artículo</label>
-              <select
-                id="condition"
-                formControlName="condition"
-                appFormControl
-                [controlStatus]="auctionForm.get('condition')?.invalid && auctionForm.get('condition')?.touched ? 'invalid' : 'default'"
-              >
-                <option value="">Selecciona un estado</option>
-                <option value="new">Nuevo</option>
-                <option value="like_new">Como nuevo</option>
-                <option value="good">Buen estado</option>
-                <option value="fair">Estado aceptable</option>
-                <option value="poor">Necesita reparación</option>
-              </select>
-              @if (auctionForm.get('condition')?.invalid &&
-              auctionForm.get('condition')?.touched) {
-              <p class="mt-1 text-sm text-red-600">
-                Selecciona el estado del artículo
-              </p>
+              @if (auctionForm.get('terms')?.invalid &&
+                auctionForm.get('terms')?.touched) {
+                <p class="mt-1 text-sm text-red-600">
+                  Debes aceptar los términos y condiciones
+                </p>
               }
             </div>
 
-            <div>
-              <label for="shippingOptions" appFormLabel [required]="true">Opciones de envío</label>
-              <select
-                id="shippingOptions"
-                formControlName="shippingOptions"
-                appFormControl
-                [controlStatus]="auctionForm.get('shippingOptions')?.invalid && auctionForm.get('shippingOptions')?.touched ? 'invalid' : 'default'"
-              >
-                <option value="">Selecciona una opción</option>
-                <option value="seller_pays">El vendedor paga el envío</option>
-                <option value="buyer_pays">El comprador paga el envío</option>
-                <option value="pickup_only">Solo recogida en persona</option>
-              </select>
-              @if (auctionForm.get('shippingOptions')?.invalid &&
-              auctionForm.get('shippingOptions')?.touched) {
-              <p class="mt-1 text-sm text-red-600">
-                Selecciona una opción de envío
-              </p>
-              }
+            <div class="pt-4 border-t border-gray-200">
+              <div class="flex justify-end">
+                <button
+                  type="button"
+                  class="mr-3 rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+                  >
+                  Guardar borrador
+                </button>
+                <button
+                  type="submit"
+                  [disabled]="auctionForm.invalid"
+                  class="rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                  @if (false) {
+                    <span class="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-white border-r-transparent align-[-0.125em] mr-2"></span>
+                  }
+                  Publicar subasta
+                </button>
+              </div>
             </div>
-          </div>
+          </form>
         </div>
-
-        <div class="pt-4 border-t border-gray-200">
-          <div class="flex items-center">
-            <input
-              id="terms"
-              formControlName="terms"
-              type="checkbox"
-              class="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
-            />
-            <label for="terms" class="ml-2 block text-sm text-gray-900">
-              Acepto los
-              <a href="#" class="text-emerald-600 hover:text-emerald-500"
-                >Términos y Condiciones</a
-              >
-              para la publicación de subastas
-            </label>
-          </div>
-          @if (auctionForm.get('terms')?.invalid &&
-          auctionForm.get('terms')?.touched) {
-          <p class="mt-1 text-sm text-red-600">
-            Debes aceptar los términos y condiciones
-          </p>
-          }
-        </div>
-
-        <div class="pt-4 border-t border-gray-200">
-          <div class="flex justify-end">
-            <button
-              type="button"
-              class="mr-3 rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
-            >
-              Guardar borrador
-            </button>
-            <button
-              type="submit"
-              [disabled]="auctionForm.invalid"
-              class="rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <span class="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-white border-r-transparent align-[-0.125em] mr-2" *ngIf="false"></span>
-              Publicar subasta
-            </button>
-          </div>
-        </div>
-      </form>
+      </div>
     </div>
-  </div>
-</div>

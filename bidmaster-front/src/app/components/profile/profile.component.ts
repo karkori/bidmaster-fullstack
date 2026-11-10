@@ -1,5 +1,5 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { User } from '@shared/models/user.model';
 import { AuthService } from '@core/services/auth.service';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -16,14 +16,13 @@ import { FormControlDirective, FormLabelDirective } from '../../shared/directive
   selector: 'app-profile',
   standalone: true,
   imports: [
-    CommonModule, 
     ReactiveFormsModule,
     PageHeaderComponent,
     LoadingSpinnerComponent,
     StatusBadgeComponent,
     FormControlDirective,
     FormLabelDirective
-  ],
+],
   templateUrl: './profile.component.html',
   styleUrls: []
 })

@@ -16,6 +16,8 @@ export interface User {
   role?: 'USER' | 'ADMIN';
   balance?: number;
   reputation?: number;
+  token?: string;
+  tokenType?: string;
 }
 
 export interface LoginCredentials {

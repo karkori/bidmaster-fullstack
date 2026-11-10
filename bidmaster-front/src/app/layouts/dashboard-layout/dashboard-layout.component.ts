@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterModule } from '@angular/router';
 import { AuthService } from '@core/services/auth.service';
 import { User } from '@shared/models/user.model';
@@ -14,7 +14,7 @@ interface SidebarItem {
 @Component({
   selector: 'app-dashboard-layout',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [RouterModule],
   templateUrl: './dashboard-layout.component.html',
   styles: ``
 })

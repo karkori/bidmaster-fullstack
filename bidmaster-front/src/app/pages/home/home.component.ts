@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { AuctionListComponent } from '@shared/components/auction-list/auction-list.component';
@@ -6,7 +6,7 @@ import { AuctionListComponent } from '@shared/components/auction-list/auction-li
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterModule, AuctionListComponent],
+  imports: [RouterModule, AuctionListComponent],
   templateUrl: './home.component.html'
 })
 export default class HomeComponent {}

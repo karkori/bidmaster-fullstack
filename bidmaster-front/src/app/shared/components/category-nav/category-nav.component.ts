@@ -1,5 +1,5 @@
 import { Component, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterLink } from '@angular/router';
 
 interface Category {
@@ -12,7 +12,7 @@ interface Category {
 @Component({
   selector: 'app-category-nav',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [RouterLink],
   template: `
     <nav class="border-b border-gray-200 bg-white shadow-sm">
       <div class="container mx-auto px-4">

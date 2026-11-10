@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -13,12 +13,11 @@ import { FormControlDirective, FormLabelDirective } from '@shared/directives';
   selector: 'app-register',
   standalone: true,
   imports: [
-    CommonModule, 
-    ReactiveFormsModule, 
+    ReactiveFormsModule,
     RouterModule,
     FormControlDirective,
     FormLabelDirective
-  ],
+],
   templateUrl: './register.component.html',
   styleUrls: []
 })
@@ -97,7 +96,7 @@ export default class RegisterComponent {
       registerSchema.parse(this.registerForm.value);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        error.errors.forEach(err => {
+        error.issues.forEach(err => {
           const path = err.path[0] as string;
           const control = this.registerForm.get(path);
           if (control) {

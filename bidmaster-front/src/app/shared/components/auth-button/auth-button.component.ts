@@ -1,11 +1,11 @@
 import { Component, inject, signal, HostListener, ElementRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterLink, Router } from '@angular/router';
 import { AuthService } from '@core/services/auth.service';
 
 @Component({
   selector: 'app-auth-button',
-  imports: [CommonModule, RouterLink],
+  imports: [RouterLink],
   template: `
     <div class="flex items-center space-x-4">
       @if (authService.isLoggedIn()) {

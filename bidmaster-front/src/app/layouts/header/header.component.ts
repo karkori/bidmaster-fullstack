@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterLink } from '@angular/router';
 import { SearchBarComponent } from '@shared/components/search-bar/search-bar.component';
 import { AuthButtonComponent } from '@shared/components/auth-button/auth-button.component';
@@ -7,7 +7,7 @@ import { AuthButtonComponent } from '@shared/components/auth-button/auth-button.
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule, RouterLink, SearchBarComponent, AuthButtonComponent],
+  imports: [RouterLink, SearchBarComponent, AuthButtonComponent],
   template: `
     <header class="bg-white shadow">
       <div class="container mx-auto px-4">

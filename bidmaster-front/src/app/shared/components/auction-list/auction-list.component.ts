@@ -1,5 +1,6 @@
-import { CommonModule } from '@angular/common';
-import { Component, Input, OnInit, inject } from '@angular/core';
+
+import { Component, Input, OnInit, inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { AuctionService } from '@core/services/auction.service';
 import { Auction, AuctionFilters } from '@shared/models/auction.model';
 import { catchError, of } from 'rxjs';
@@ -8,7 +9,7 @@ import { AuctionCardComponent } from '../auction-card/auction-card.component';
 @Component({
   selector: 'app-auction-list',
   standalone: true,
-  imports: [CommonModule, AuctionCardComponent],
+  imports: [AuctionCardComponent],
   templateUrl: './auction-list.component.html'
 })
 export class AuctionListComponent implements OnInit {
@@ -22,12 +23,17 @@ export class AuctionListComponent implements OnInit {
   error: string | null = null;
   
   private auctionService = inject(AuctionService);
+  private platformId = inject(PLATFORM_ID);
   
   ngOnInit(): void {
     this.loadAuctions();
   }
   
   loadAuctions(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      this.loading = false;
+      return;
+    }
     this.loading = true;
     this.auctionService.findAuctions(this.filters)
       .pipe(

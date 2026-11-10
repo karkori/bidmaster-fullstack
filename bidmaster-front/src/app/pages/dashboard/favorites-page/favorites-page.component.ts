@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, OnInit, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '@core/services/auth.service';
@@ -10,9 +10,8 @@ import FavoritesComponent from '../../../components/favorites/favorites.componen
   selector: 'app-favorites-page',
   standalone: true,
   imports: [
-    CommonModule,
     FavoritesComponent
-  ],
+],
   template: `
     <div class="container mx-auto px-4 py-6">
       <app-favorites></app-favorites>

@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { z } from 'zod';
@@ -13,12 +13,11 @@ import { FormControlDirective, FormLabelDirective } from '@shared/directives';
   selector: 'app-login',
   standalone: true,
   imports: [
-    CommonModule, 
-    ReactiveFormsModule, 
+    ReactiveFormsModule,
     RouterModule,
     FormControlDirective,
     FormLabelDirective
-  ],
+],
   templateUrl: './login.component.html',
   styleUrls: []
 })
@@ -66,7 +65,7 @@ export default class LoginComponent {
       loginSchema.parse(this.loginForm.value);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        error.errors.forEach(err => {
+        error.issues.forEach(err => {
           const control = this.loginForm.get(err.path[0] as string);
           if (control) {
             control.setErrors({ zod: err.message });

@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, OnInit, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '@core/services/auth.service';
@@ -10,9 +10,8 @@ import MessagesComponent from '../../../components/messages/messages.component';
   selector: 'app-messages-page',
   standalone: true,
   imports: [
-    CommonModule,
     MessagesComponent
-  ],
+],
   template: `
     <div class="container mx-auto px-4 py-6">
       <app-messages></app-messages>

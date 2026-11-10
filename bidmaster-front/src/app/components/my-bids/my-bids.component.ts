@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, OnInit, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '@core/services/auth.service';
@@ -23,10 +23,9 @@ interface Bid {
   selector: 'app-my-bids',
   standalone: true,
   imports: [
-    CommonModule,
     PageHeaderComponent,
-    FilterBarComponent,
-  ],
+    FilterBarComponent
+],
   templateUrl: './my-bids.component.html',
   styleUrls: []
 })
