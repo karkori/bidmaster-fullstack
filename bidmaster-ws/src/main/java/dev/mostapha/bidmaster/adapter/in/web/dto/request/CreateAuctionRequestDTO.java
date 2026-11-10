@@ -36,7 +36,7 @@ public class CreateAuctionRequestDTO {
     
     @NotNull(message = "La fecha de finalización es obligatoria")
     @Future(message = "La fecha de finalización debe ser en el futuro")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private LocalDateTime endDate;
     
     @DecimalMin(value = "0.01", message = "El incremento mínimo debe ser mayor que 0")
@@ -49,6 +49,9 @@ public class CreateAuctionRequestDTO {
     private String shippingOptions;
     
     private boolean allowPause;
+
+    @DecimalMin(value = "0", message = "El depósito requerido no puede ser negativo")
+    private BigDecimal depositRequired;
     
     // Constructores
     
@@ -136,5 +139,13 @@ public class CreateAuctionRequestDTO {
 
     public void setAllowPause(boolean allowPause) {
         this.allowPause = allowPause;
+    }
+
+    public BigDecimal getDepositRequired() {
+        return depositRequired;
+    }
+
+    public void setDepositRequired(BigDecimal depositRequired) {
+        this.depositRequired = depositRequired;
     }
 }

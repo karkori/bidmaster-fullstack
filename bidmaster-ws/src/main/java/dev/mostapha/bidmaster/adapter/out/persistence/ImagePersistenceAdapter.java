@@ -1,71 +1,76 @@
 package dev.mostapha.bidmaster.adapter.out.persistence;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Component;
 
+import dev.mostapha.bidmaster.adapter.out.persistence.entity.ImageEntity;
+import dev.mostapha.bidmaster.adapter.out.persistence.repository.JpaImageRepository;
 import dev.mostapha.bidmaster.application.port.out.ImageRepositoryPort;
 import dev.mostapha.bidmaster.domain.model.image.Image;
 import dev.mostapha.bidmaster.domain.model.image.Image.ImageType;
-import dev.mostapha.bidmaster.infrastructure.persistence.entities.ImageEntity;
-import dev.mostapha.bidmaster.infrastructure.persistence.repositories.ImageRepository;
 import lombok.RequiredArgsConstructor;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
+/**
+ * Adaptador de salida JPA unificado para la persistencia de imágenes.
+ */
 @Component
 @RequiredArgsConstructor
 public class ImagePersistenceAdapter implements ImageRepositoryPort {
 
-    private final ImageRepository imageRepository;
-    
+    private final JpaImageRepository imageRepository;
+
     @Override
-    public Mono<Image> save(Image image) {
+    public Image save(Image image) {
         ImageEntity entity = toEntity(image);
-        return imageRepository.save(entity)
-                .map(this::toDomainModel);
+        if (!imageRepository.existsById(entity.getId())) {
+            entity.setVersion(null);
+        }
+        return toDomainModel(imageRepository.save(entity));
     }
-    
+
     @Override
-    public Mono<Image> findById(UUID id) {
-        return imageRepository.findById(id)
-                .map(this::toDomainModel);
+    public Optional<Image> findById(UUID id) {
+        return imageRepository.findById(id).map(this::toDomainModel);
     }
-    
+
     @Override
-    public Flux<Image> findByReferenceIdAndType(UUID referenceId, ImageType type) {
-        return imageRepository.findByReferenceIdAndType(referenceId, type.name())
-                .map(this::toDomainModel);
+    public List<Image> findByReferenceIdAndType(UUID referenceId, ImageType type) {
+        return imageRepository.findByReferenceIdAndTypeOrderByDisplayOrderAsc(referenceId, type.name())
+                .stream()
+                .map(this::toDomainModel)
+                .toList();
     }
-    
+
     @Override
-    public Flux<Image> findByUploadedBy(UUID uploadedBy) {
-        return imageRepository.findByUploadedBy(uploadedBy)
-                .map(this::toDomainModel);
+    public List<Image> findByUploadedBy(UUID uploadedBy) {
+        return imageRepository.findByUploadedByOrderByUploadDateDesc(uploadedBy)
+                .stream()
+                .map(this::toDomainModel)
+                .toList();
     }
-    
+
     @Override
-    public Mono<Boolean> delete(UUID id) {
-        return imageRepository.existsById(id)
-                .flatMap(exists -> {
-                    if (exists) {
-                        return imageRepository.deleteById(id)
-                                .thenReturn(true);
-                    }
-                    return Mono.just(false);
-                });
+    public boolean delete(UUID id) {
+        if (imageRepository.existsById(id)) {
+            imageRepository.deleteById(id);
+            return true;
+        }
+        return false;
     }
-    
+
     @Override
-    public Mono<Long> deleteAll(List<UUID> ids) {
-        return Flux.fromIterable(ids)
-                .flatMap(id -> delete(id)
-                        .filter(deleted -> deleted)
-                        .map(deleted -> 1L))
-                .reduce(0L, Long::sum);
+    public long deleteAll(List<UUID> ids) {
+        return ids.stream().filter(this::delete).count();
     }
-    
+
+    @Override
+    public void deleteByReferenceIdAndType(UUID referenceId, ImageType type) {
+        imageRepository.deleteByReferenceIdAndType(referenceId, type.name());
+    }
+
     private ImageEntity toEntity(Image image) {
         return ImageEntity.builder()
                 .id(image.getId())
@@ -73,9 +78,14 @@ public class ImagePersistenceAdapter implements ImageRepositoryPort {
                 .originalFilename(image.getOriginalFilename())
                 .contentType(image.getContentType())
                 .size(image.getSize())
+                .url(image.getUrl())
+                .thumbnailUrl(image.getThumbnailUrl())
                 .bucketName(image.getBucketName())
                 .objectName(image.getObjectName())
                 .thumbnailObjectName(image.getThumbnailObjectName())
+                .description(image.getDescription())
+                .isPrimary(image.isPrimary())
+                .displayOrder(image.getDisplayOrder())
                 .uploadDate(image.getUploadDate())
                 .uploadedBy(image.getUploadedBy())
                 .type(image.getType().name())
@@ -83,7 +93,7 @@ public class ImagePersistenceAdapter implements ImageRepositoryPort {
                 .version(image.getVersion())
                 .build();
     }
-    
+
     private Image toDomainModel(ImageEntity entity) {
         return Image.reconstitute(
                 entity.getId(),
@@ -91,14 +101,18 @@ public class ImagePersistenceAdapter implements ImageRepositoryPort {
                 entity.getOriginalFilename(),
                 entity.getContentType(),
                 entity.getSize(),
+                entity.getUrl(),
+                entity.getThumbnailUrl(),
                 entity.getBucketName(),
                 entity.getObjectName(),
                 entity.getThumbnailObjectName(),
+                entity.getDescription(),
+                entity.isPrimary(),
+                entity.getDisplayOrder(),
                 entity.getUploadDate(),
                 entity.getUploadedBy(),
                 ImageType.valueOf(entity.getType()),
                 entity.getReferenceId(),
-                entity.getVersion()
-        );
+                entity.getVersion());
     }
 }

@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-
+import dev.mostapha.bidmaster.domain.model.image.Image;
 
 /**
  * Entidad de dominio Subasta.
@@ -50,7 +50,7 @@ public class Auction {
     private final LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private long version;
-    private List<AuctionImage> images;
+    private List<Image> images;
     
     /**
      * Constructor privado para crear una nueva subasta
@@ -319,9 +319,12 @@ public class Auction {
      * Genera un slug a partir del título
      */
     private String generateSlug(String title) {
-        return title.toLowerCase()
-                .replaceAll("[^a-z0-9\s]", "")
-                .replaceAll("\s+", "-") 
+        String normalized = java.text.Normalizer.normalize(title.toLowerCase(), java.text.Normalizer.Form.NFD)
+                .replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
+        return normalized
+                .replaceAll("[^a-z0-9\\s]", "")
+                .trim()
+                .replaceAll("\\s+", "-") 
                 + "-" + UUID.randomUUID().toString().substring(0, 8);
     }
     
@@ -546,11 +549,11 @@ public class Auction {
         return version;
     }
 
-    public List<AuctionImage> getImages() {
+    public List<Image> getImages() {
         return images;
     }
 
-    public void setImages(List<AuctionImage> images) {
+    public void setImages(List<Image> images) {
         this.images = images;
     }
 }

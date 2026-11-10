@@ -7,9 +7,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,21 +21,24 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import dev.mostapha.bidmaster.adapter.in.web.dto.request.CreateAuctionRequestDTO;
 import dev.mostapha.bidmaster.adapter.in.web.dto.request.PlaceBidRequestDTO;
 import dev.mostapha.bidmaster.adapter.in.web.dto.response.AuctionImageDTO;
 import dev.mostapha.bidmaster.adapter.in.web.dto.response.AuctionResponseDTO;
+import dev.mostapha.bidmaster.adapter.in.web.dto.response.BidResponseDTO;
+import dev.mostapha.bidmaster.adapter.out.event.AuctionEventBroadcaster;
 import dev.mostapha.bidmaster.application.port.in.AuctionUseCase;
 import dev.mostapha.bidmaster.application.port.in.UserUseCase;
 import dev.mostapha.bidmaster.domain.model.auction.Auction;
 import dev.mostapha.bidmaster.domain.model.auction.AuctionCategory;
+import dev.mostapha.bidmaster.domain.model.bid.Bid;
+import dev.mostapha.bidmaster.domain.model.user.User;
 import jakarta.validation.Valid;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 /**
- * Controlador para las operaciones relacionadas con subastas.
+ * Controlador REST para las operaciones relacionadas con subastas, pujas y streaming en tiempo real (SSE).
  */
 @RestController
 @RequestMapping("/api/auctions")
@@ -43,123 +46,82 @@ public class AuctionController {
 
     private final AuctionUseCase auctionUseCase;
     private final UserUseCase userUseCase;
+    private final AuctionEventBroadcaster eventBroadcaster;
 
-    public AuctionController(AuctionUseCase auctionUseCase, UserUseCase userUseCase) {
+    public AuctionController(
+            AuctionUseCase auctionUseCase,
+            UserUseCase userUseCase,
+            AuctionEventBroadcaster eventBroadcaster) {
         this.auctionUseCase = auctionUseCase;
         this.userUseCase = userUseCase;
+        this.eventBroadcaster = eventBroadcaster;
     }
 
     /**
-     * Crea una nueva subasta
+     * Stream SSE en tiempo real para recibir eventos de todas las subastas.
+     */
+    @GetMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter streamAllAuctions() {
+        return eventBroadcaster.subscribeToAllAuctions();
+    }
+
+    /**
+     * Stream SSE en tiempo real para recibir pujas y cambios de estado de una subasta específica.
+     */
+    @GetMapping(value = "/{id}/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter streamAuction(@PathVariable UUID id) {
+        return eventBroadcaster.subscribeToAuction(id);
+    }
+
+    /**
+     * Crea una nueva subasta.
      */
     @PostMapping
-    public Mono<ResponseEntity<AuctionResponseDTO>> createAuction(
+    public ResponseEntity<AuctionResponseDTO> createAuction(
             @Valid @RequestBody CreateAuctionRequestDTO requestDTO,
             Principal principal) {
-        String username = "admin"; // TO-DO: remove this when JWT is implemented
-        if (principal != null) {
-            username = principal.getName();
-        }
-        // Obtener el usuario actual a partir del token JWT (principal)
-        // Por ahora, usaremos su username para buscar el usuario
-        return userUseCase.findUserByUsername(username)
-                .flatMap(user -> {
-                    // Convertir DTO a entidad de dominio
-                    Auction auction = createAuctionFromDTO(requestDTO, user.getId());
-
-                    // Persistir la subasta
-                    return auctionUseCase.createAuction(auction)
-                            .map(createdAuction -> {
-                                // Convertir entidad a DTO de respuesta
-                                AuctionResponseDTO responseDTO = convertToDTO(createdAuction);
-                                // Añadir datos del vendedor
-                                responseDTO.setSellerId(user.getId());
-                                responseDTO.setSellerUsername(user.getUsername());
-                                return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
-                            });
-                })
-                // if user not found
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("El usuario %s no existe", username))));
+        User seller = resolveCurrentUser(principal, "vendedor");
+        Auction auction = createAuctionFromDTO(requestDTO, seller.getId());
+        Auction createdAuction = auctionUseCase.createAuction(auction);
+        return ResponseEntity.status(HttpStatus.CREATED).body(enrichAndConvertToDTO(createdAuction));
     }
 
     /**
-     * Obtiene una subasta por su ID
+     * Obtiene una subasta por su ID.
      */
     @GetMapping("/{id}")
-    public Mono<ResponseEntity<AuctionResponseDTO>> getAuctionById(@PathVariable String id) {
-        return auctionUseCase.findAuctionById(UUID.fromString(id))
-                .flatMap(auction -> {
-                    // Obtener el usuario vendedor para incluir sus datos
-                    return userUseCase.findUserById(auction.getSellerId())
-                            .flatMap(seller -> {
-                                AuctionResponseDTO dto = convertToDTO(auction);
-                                dto.setSellerId(seller.getId());
-                                dto.setSellerUsername(seller.getUsername());
-
-                                // Si hay ganador, obtener sus datos
-                                if (auction.getWinnerId() != null) {
-                                    return userUseCase.findUserById(auction.getWinnerId())
-                                            .map(winner -> {
-                                                dto.setWinnerId(winner.getId());
-                                                dto.setWinnerUsername(winner.getUsername());
-                                                return ResponseEntity.ok(dto);
-                                            })
-                                            .defaultIfEmpty(ResponseEntity.ok(dto));
-                                } else {
-                                    return Mono.just(ResponseEntity.ok(dto));
-                                }
-                            });
-                })
-                .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));
+    public ResponseEntity<AuctionResponseDTO> getAuctionById(@PathVariable UUID id) {
+        return auctionUseCase.findAuctionById(id)
+                .map(auction -> ResponseEntity.ok(enrichAndConvertToDTO(auction)))
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     /**
-     * Obtiene una subasta por su slug
+     * Obtiene una subasta por su slug.
      */
     @GetMapping("/slug/{slug}")
-    public Mono<ResponseEntity<AuctionResponseDTO>> getAuctionBySlug(@PathVariable String slug) {
+    public ResponseEntity<AuctionResponseDTO> getAuctionBySlug(@PathVariable String slug) {
         return auctionUseCase.findAuctionBySlug(slug)
-                .flatMap(auction -> {
-                    // Similar al método getAuctionById
-                    return userUseCase.findUserById(auction.getSellerId())
-                            .flatMap(seller -> {
-                                AuctionResponseDTO dto = convertToDTO(auction);
-                                dto.setSellerId(seller.getId());
-                                dto.setSellerUsername(seller.getUsername());
-
-                                if (auction.getWinnerId() != null) {
-                                    return userUseCase.findUserById(auction.getWinnerId())
-                                            .map(winner -> {
-                                                dto.setWinnerId(winner.getId());
-                                                dto.setWinnerUsername(winner.getUsername());
-                                                return ResponseEntity.ok(dto);
-                                            })
-                                            .defaultIfEmpty(ResponseEntity.ok(dto));
-                                } else {
-                                    return Mono.just(ResponseEntity.ok(dto));
-                                }
-                            });
-                })
-                .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));
+                .map(auction -> ResponseEntity.ok(enrichAndConvertToDTO(auction)))
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     /**
-     * Busca subastas con filtros
+     * Busca subastas con filtros dinámicos.
      */
     @GetMapping
-    public Flux<AuctionResponseDTO> findAuctions(
+    public List<AuctionResponseDTO> findAuctions(
             @RequestParam(required = false) String category,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) Double minPrice,
             @RequestParam(required = false) Double maxPrice,
-            @RequestParam(required = false) String sellerId) {
+            @RequestParam(required = false) UUID sellerId) {
 
-        // Construir mapa de filtros
         Map<String, Object> filters = new HashMap<>();
-        if (category != null) {
+        if (category != null && !category.isBlank()) {
             filters.put("category", category);
         }
-        if (status != null) {
+        if (status != null && !status.isBlank()) {
             filters.put("status", status);
         }
         if (minPrice != null) {
@@ -169,183 +131,224 @@ public class AuctionController {
             filters.put("maxPrice", maxPrice);
         }
         if (sellerId != null) {
-            filters.put("sellerId", UUID.fromString(sellerId));
+            filters.put("sellerId", sellerId);
         }
 
-        return auctionUseCase.findAuctions(filters)
-                .flatMap(auction -> {
-                    // Obtener el usuario vendedor para cada subasta
-                    return userUseCase.findUserById(auction.getSellerId())
-                            .flatMap(seller -> {
-                                AuctionResponseDTO dto = convertToDTO(auction);
-                                dto.setSellerId(seller.getId());
-                                dto.setSellerUsername(seller.getUsername());
-
-                                if (auction.getWinnerId() != null) {
-                                    return userUseCase.findUserById(auction.getWinnerId())
-                                            .map(winner -> {
-                                                dto.setWinnerId(winner.getId());
-                                                dto.setWinnerUsername(winner.getUsername());
-                                                return dto;
-                                            })
-                                            .defaultIfEmpty(dto);
-                                } else {
-                                    return Mono.just(dto);
-                                }
-                            });
-                });
+        return auctionUseCase.findAuctions(filters).stream()
+                .map(this::enrichAndConvertToDTO)
+                .toList();
     }
 
     /**
-     * Actualiza una subasta existente
+     * Obtiene subastas filtradas por categoría directamente desde el path.
+     */
+    @GetMapping("/category/{category}")
+    public List<AuctionResponseDTO> getAuctionsByCategory(@PathVariable String category) {
+        return findAuctions(category, null, null, null, null);
+    }
+
+    /**
+     * Actualiza una subasta existente (solo en estado DRAFT).
      */
     @PutMapping("/{id}")
-    public Mono<ResponseEntity<AuctionResponseDTO>> updateAuction(
-            @PathVariable String id,
+    public ResponseEntity<AuctionResponseDTO> updateAuction(
+            @PathVariable UUID id,
             @Valid @RequestBody CreateAuctionRequestDTO requestDTO,
             Principal principal) {
 
-        return userUseCase.findUserByUsername(principal.getName())
-                .<ResponseEntity<AuctionResponseDTO>>flatMap(user -> {
-                    // Verificar que el usuario es el propietario de la subasta
-                    return auctionUseCase.findAuctionById(UUID.fromString(id))
-                            .<ResponseEntity<AuctionResponseDTO>>flatMap(auction -> {
-                                if (!auction.getSellerId().equals(user.getId())) {
-                                    return Mono.just(ResponseEntity.status(HttpStatus.FORBIDDEN).build());
-                                }
+        User user = resolveCurrentUser(principal, "vendedor");
+        Auction auction = auctionUseCase.findAuctionById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Subasta no encontrada"));
 
-                                // Actualizar los campos de la subasta
-                                Auction updatedAuction = updateAuctionFromDTO(auction, requestDTO);
+        if (!auction.getSellerId().equals(user.getId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
 
-                                return auctionUseCase.updateAuction(UUID.fromString(id), updatedAuction)
-                                        .map(result -> {
-                                            AuctionResponseDTO dto = convertToDTO(result);
-                                            dto.setSellerId(user.getId());
-                                            dto.setSellerUsername(user.getUsername());
-                                            return ResponseEntity.ok(dto);
-                                        });
-                            });
-                })
-                .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));
+        Auction updatedAuction = updateAuctionFromDTO(auction, requestDTO);
+        Auction result = auctionUseCase.updateAuction(id, updatedAuction);
+        return ResponseEntity.ok(enrichAndConvertToDTO(result));
     }
 
     /**
-     * Publica una subasta (cambia estado de DRAFT a ACTIVE)
+     * Publica una subasta (cambia de DRAFT a ACTIVE). Soporta tanto PUT como POST.
      */
     @PutMapping("/{id}/publish")
-    public Mono<ResponseEntity<AuctionResponseDTO>> publishAuction(
-            @PathVariable String id,
-            Principal principal) {
+    public ResponseEntity<AuctionResponseDTO> publishAuctionPut(@PathVariable UUID id, Principal principal) {
+        return doPublishAuction(id, principal);
+    }
 
-        return userUseCase.findUserByUsername(principal.getName())
-                .<ResponseEntity<AuctionResponseDTO>>flatMap(user -> {
-                    // Verificar que el usuario es el propietario de la subasta
-                    return auctionUseCase.findAuctionById(UUID.fromString(id))
-                            .<ResponseEntity<AuctionResponseDTO>>flatMap(auction -> {
-                                if (!auction.getSellerId().equals(user.getId())) {
-                                    return Mono.just(ResponseEntity.status(HttpStatus.FORBIDDEN).build());
-                                }
+    @PostMapping("/{id}/publish")
+    public ResponseEntity<AuctionResponseDTO> publishAuctionPost(@PathVariable UUID id, Principal principal) {
+        return doPublishAuction(id, principal);
+    }
 
-                                return auctionUseCase.publishAuction(UUID.fromString(id))
-                                        .<ResponseEntity<AuctionResponseDTO>>map(result -> {
-                                            AuctionResponseDTO dto = convertToDTO(result);
-                                            dto.setSellerId(user.getId());
-                                            dto.setSellerUsername(user.getUsername());
-                                            return ResponseEntity.ok(dto);
-                                        })
-                                        .onErrorResume(e -> Mono.just(ResponseEntity.badRequest().build()));
-                            });
-                })
-                .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));
+    private ResponseEntity<AuctionResponseDTO> doPublishAuction(UUID id, Principal principal) {
+        User user = resolveCurrentUser(principal, "vendedor");
+        Auction auction = auctionUseCase.findAuctionById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Subasta no encontrada"));
+
+        if (!auction.getSellerId().equals(user.getId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        Auction result = auctionUseCase.publishAuction(id);
+        return ResponseEntity.ok(enrichAndConvertToDTO(result));
     }
 
     /**
-     * Elimina una subasta (solo en estado DRAFT)
+     * Pausa una subasta activa (solo el vendedor).
+     */
+    @PostMapping("/{id}/pause")
+    public ResponseEntity<AuctionResponseDTO> pauseAuction(@PathVariable UUID id, Principal principal) {
+        User user = resolveCurrentUser(principal, "vendedor");
+        Auction auction = auctionUseCase.findAuctionById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Subasta no encontrada"));
+
+        if (!auction.getSellerId().equals(user.getId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        Auction result = auctionUseCase.pauseAuction(id);
+        return ResponseEntity.ok(enrichAndConvertToDTO(result));
+    }
+
+    /**
+     * Reanuda una subasta pausada (solo el vendedor).
+     */
+    @PostMapping("/{id}/resume")
+    public ResponseEntity<AuctionResponseDTO> resumeAuction(@PathVariable UUID id, Principal principal) {
+        User user = resolveCurrentUser(principal, "vendedor");
+        Auction auction = auctionUseCase.findAuctionById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Subasta no encontrada"));
+
+        if (!auction.getSellerId().equals(user.getId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        Auction result = auctionUseCase.resumeAuction(id);
+        return ResponseEntity.ok(enrichAndConvertToDTO(result));
+    }
+
+    /**
+     * Cancela una subasta (solo el vendedor).
+     */
+    @PostMapping("/{id}/cancel")
+    public ResponseEntity<AuctionResponseDTO> cancelAuction(@PathVariable UUID id, Principal principal) {
+        User user = resolveCurrentUser(principal, "vendedor");
+        Auction auction = auctionUseCase.findAuctionById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Subasta no encontrada"));
+
+        if (!auction.getSellerId().equals(user.getId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        Auction result = auctionUseCase.cancelAuction(id);
+        return ResponseEntity.ok(enrichAndConvertToDTO(result));
+    }
+
+    /**
+     * Finaliza una subasta (cambia estado a FINISHED).
+     */
+    @PostMapping("/{id}/finish")
+    public ResponseEntity<AuctionResponseDTO> finishAuction(@PathVariable UUID id, Principal principal) {
+        Auction result = auctionUseCase.finishAuction(id);
+        return ResponseEntity.ok(enrichAndConvertToDTO(result));
+    }
+
+    /**
+     * Elimina una subasta (solo en estado DRAFT).
      */
     @DeleteMapping("/{id}")
-    public Mono<ResponseEntity<Void>> deleteAuction(
-            @PathVariable String id,
-            Principal principal) {
+    public ResponseEntity<Void> deleteAuction(@PathVariable UUID id, Principal principal) {
+        User user = resolveCurrentUser(principal, "vendedor");
+        Auction auction = auctionUseCase.findAuctionById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Subasta no encontrada"));
 
-        return userUseCase.findUserByUsername(principal.getName())
-                .<ResponseEntity<Void>>flatMap(user -> {
-                    // Verificar que el usuario es el propietario de la subasta
-                    return auctionUseCase.findAuctionById(UUID.fromString(id))
-                            .<ResponseEntity<Void>>flatMap(auction -> {
-                                if (!auction.getSellerId().equals(user.getId())) {
-                                    return Mono.just(ResponseEntity.status(HttpStatus.FORBIDDEN).build());
-                                }
+        if (!auction.getSellerId().equals(user.getId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
 
-                                return auctionUseCase.deleteAuction(UUID.fromString(id))
-                                        .then(Mono.just(ResponseEntity.noContent().build()));
-                            });
-                })
-                .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));
+        auctionUseCase.deleteAuction(id);
+        return ResponseEntity.noContent().build();
     }
 
     /**
-     * Realiza una puja en una subasta
+     * Realiza una puja transaccional en una subasta.
      */
     @PostMapping("/{id}/bids")
-    public Mono<ResponseEntity<AuctionResponseDTO>> placeBid(
-            @PathVariable String id,
+    public ResponseEntity<AuctionResponseDTO> placeBid(
+            @PathVariable UUID id,
             @Valid @RequestBody PlaceBidRequestDTO requestDTO,
             Principal principal) {
 
-        return userUseCase.findUserByUsername(principal.getName())
-                .<ResponseEntity<AuctionResponseDTO>>flatMap(user -> {
-                    // Verificar que el usuario no es el propietario de la subasta
-                    return auctionUseCase.findAuctionById(UUID.fromString(id))
-                            .<ResponseEntity<AuctionResponseDTO>>flatMap(auction -> {
-                                if (auction.getSellerId().equals(user.getId())) {
-                                    return Mono.just(ResponseEntity
-                                            .status(HttpStatus.FORBIDDEN)
-                                            .body(null)); // El vendedor no puede pujar en su propia subasta
-                                }
+        User bidder = resolveCurrentUser(principal, "comprador");
+        Auction auction = auctionUseCase.findAuctionById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Subasta no encontrada"));
 
-                                return auctionUseCase
-                                        .placeBid(UUID.fromString(id), user.getId(), requestDTO.getAmount())
-                                        .<ResponseEntity<AuctionResponseDTO>>flatMap(updatedAuction -> {
-                                            AuctionResponseDTO dto = convertToDTO(updatedAuction);
+        if (auction.getSellerId().equals(bidder.getId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
 
-                                            // Obtener datos del vendedor
-                                            return userUseCase.findUserById(updatedAuction.getSellerId())
-                                                    .<ResponseEntity<AuctionResponseDTO>>map(seller -> {
-                                                        dto.setSellerId(seller.getId());
-                                                        dto.setSellerUsername(seller.getUsername());
-
-                                                        // Agregar datos del ganador actual
-                                                        if (updatedAuction.getWinnerId() != null &&
-                                                                updatedAuction.getWinnerId().equals(user.getId())) {
-                                                            dto.setWinnerId(user.getId());
-                                                            dto.setWinnerUsername(user.getUsername());
-                                                        }
-
-                                                        return ResponseEntity.ok(dto);
-                                                    });
-                                        })
-                                        .onErrorResume(e -> {
-                                            if (e instanceof IllegalStateException) {
-                                                return Mono.just(ResponseEntity
-                                                        .status(HttpStatus.BAD_REQUEST)
-                                                        .body(null));
-                                            }
-                                            return Mono.just(ResponseEntity
-                                                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                                                    .body(null));
-                                        });
-                            });
-                })
-                .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));
+        Auction updatedAuction = auctionUseCase.placeBid(id, bidder.getId(), requestDTO.getAmount());
+        return ResponseEntity.ok(enrichAndConvertToDTO(updatedAuction));
     }
 
-    // Métodos auxiliares para convertir entre entidades y DTOs
+    /**
+     * Obtiene el historial de pujas de una subasta.
+     */
+    @GetMapping("/{id}/bids")
+    public List<BidResponseDTO> getAuctionBids(@PathVariable UUID id) {
+        String title = auctionUseCase.findAuctionById(id).map(Auction::getTitle).orElse(null);
+        return auctionUseCase.findBidsByAuctionId(id).stream()
+                .map(bid -> convertBidToDTO(bid, title))
+                .toList();
+    }
 
     /**
-     * Crea una entidad Auction a partir del DTO de petición
+     * Obtiene el historial de pujas realizadas por un usuario específico.
      */
+    @GetMapping("/bids/user/{userId}")
+    public List<BidResponseDTO> getUserBids(@PathVariable UUID userId) {
+        return auctionUseCase.findBidsByBidderId(userId).stream()
+                .map(bid -> {
+                    String title = auctionUseCase.findAuctionById(bid.getAuctionId())
+                            .map(Auction::getTitle)
+                            .orElse("Subasta");
+                    return convertBidToDTO(bid, title);
+                })
+                .toList();
+    }
+
+    private User resolveCurrentUser(Principal principal, String fallbackUsername) {
+        String username = (principal != null && principal.getName() != null)
+                ? principal.getName()
+                : fallbackUsername;
+
+        return userUseCase.findUserByUsername(username)
+                .or(() -> userUseCase.findAllUsers().stream().findFirst())
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "El usuario " + username + " no existe"));
+    }
+
+    private BidResponseDTO convertBidToDTO(Bid bid, String auctionTitle) {
+        String bidderUsername = userUseCase.findUserById(bid.getBidderId())
+                .map(User::getUsername)
+                .orElse(null);
+
+        return BidResponseDTO.builder()
+                .id(bid.getId())
+                .auctionId(bid.getAuctionId())
+                .auctionTitle(auctionTitle)
+                .bidderId(bid.getBidderId())
+                .bidderUsername(bidderUsername)
+                .amount(bid.getAmount())
+                .depositBlocked(bid.getDepositBlocked())
+                .status(bid.getStatus().name())
+                .createdAt(bid.getCreatedAt())
+                .build();
+    }
+
     private Auction createAuctionFromDTO(CreateAuctionRequestDTO dto, UUID sellerId) {
-        // Convertir string de categoría a enum
         AuctionCategory category;
         try {
             category = AuctionCategory.valueOf(dto.getCategory().toUpperCase());
@@ -353,7 +356,6 @@ public class AuctionController {
             throw new IllegalArgumentException("Categoría no válida: " + dto.getCategory());
         }
 
-        // Crear la subasta con los datos básicos
         Auction auction = Auction.create(
                 dto.getTitle(),
                 dto.getDescription(),
@@ -362,9 +364,11 @@ public class AuctionController {
                 dto.getEndDate(),
                 sellerId);
 
-        // Establecer campos opcionales
         if (dto.getMinBidIncrement() != null) {
             auction.setMinBidIncrement(dto.getMinBidIncrement());
+        }
+        if (dto.getDepositRequired() != null) {
+            auction.setDepositRequired(dto.getDepositRequired());
         }
         auction.setCondition(dto.getCondition());
         auction.setShippingOptions(dto.getShippingOptions());
@@ -373,9 +377,6 @@ public class AuctionController {
         return auction;
     }
 
-    /**
-     * Actualiza una entidad Auction existente con los datos del DTO
-     */
     private Auction updateAuctionFromDTO(Auction auction, CreateAuctionRequestDTO dto) {
         if (dto.getTitle() != null) {
             auction.setTitle(dto.getTitle());
@@ -387,8 +388,7 @@ public class AuctionController {
             try {
                 AuctionCategory category = AuctionCategory.valueOf(dto.getCategory().toUpperCase());
                 auction.setCategory(category);
-            } catch (IllegalArgumentException e) {
-                // Ignorar categoría inválida en actualización
+            } catch (IllegalArgumentException ignored) {
             }
         }
         if (dto.getInitialPrice() != null) {
@@ -396,6 +396,9 @@ public class AuctionController {
         }
         if (dto.getMinBidIncrement() != null) {
             auction.setMinBidIncrement(dto.getMinBidIncrement());
+        }
+        if (dto.getDepositRequired() != null) {
+            auction.setDepositRequired(dto.getDepositRequired());
         }
         if (dto.getEndDate() != null) {
             auction.setEndDate(dto.getEndDate());
@@ -411,19 +414,14 @@ public class AuctionController {
         return auction;
     }
 
-    /**
-     * Convierte una entidad Auction a un DTO de respuesta
-     */
-    private AuctionResponseDTO convertToDTO(Auction auction) {
+    private AuctionResponseDTO enrichAndConvertToDTO(Auction auction) {
         AuctionResponseDTO dto = new AuctionResponseDTO();
 
-        // Datos básicos
         dto.setId(auction.getId());
         dto.setTitle(auction.getTitle());
         dto.setDescription(auction.getDescription());
         dto.setSlug(auction.getSlug());
 
-        // Gestionar posibles nulos
         if (auction.getCategory() != null) {
             dto.setCategory(auction.getCategory().getDisplayName());
         }
@@ -431,6 +429,7 @@ public class AuctionController {
         dto.setInitialPrice(auction.getInitialPrice());
         dto.setCurrentPrice(auction.getCurrentPrice());
         dto.setMinBidIncrement(auction.getMinBidIncrement());
+        dto.setDepositRequired(auction.getDepositRequired());
         dto.setStartDate(auction.getStartDate());
         dto.setEndDate(auction.getEndDate());
 
@@ -444,37 +443,38 @@ public class AuctionController {
         dto.setShippingOptions(auction.getShippingOptions());
         dto.setAllowPause(auction.isAllowPause());
 
-        // IDs
         dto.setSellerId(auction.getSellerId());
-        dto.setWinnerId(auction.getWinnerId());
-
-        // Calcular tiempo restante
-        Duration timeLeft = auction.getTimeLeft();
-        if (timeLeft != null) {
-            dto.setTimeLeftSeconds(timeLeft.getSeconds());
-        } else {
-            dto.setTimeLeftSeconds(0);
+        if (auction.getSellerId() != null) {
+            userUseCase.findUserById(auction.getSellerId())
+                    .ifPresent(seller -> dto.setSellerUsername(seller.getUsername()));
         }
 
-        // Mapear las imágenes a DTOs
+        dto.setWinnerId(auction.getWinnerId());
+        if (auction.getWinnerId() != null) {
+            userUseCase.findUserById(auction.getWinnerId())
+                    .ifPresent(winner -> dto.setWinnerUsername(winner.getUsername()));
+        }
+
+        Duration timeLeft = auction.getTimeLeft();
+        dto.setTimeLeftSeconds(timeLeft != null ? Math.max(0, timeLeft.getSeconds()) : 0);
+
         if (auction.getImages() != null) {
             List<AuctionImageDTO> imageDTOs = auction.getImages().stream()
-                .map(image -> new AuctionImageDTO(
-                    image.getId(),
-                    image.getUrl(),
-                    image.getDescription(),
-                    image.isPrimary(),
-                    image.getDisplayOrder(),
-                    image.getFileName(),
-                    image.getContentType(),
-                    image.getFileSize()))
-                .collect(Collectors.toList());
+                    .map(image -> new AuctionImageDTO(
+                            image.getId(),
+                            image.getUrl(),
+                            image.getDescription(),
+                            image.isPrimary(),
+                            image.getDisplayOrder(),
+                            image.getFilename(),
+                            image.getContentType(),
+                            image.getSize()))
+                    .toList();
             dto.setImages(imageDTOs);
         } else {
             dto.setImages(Collections.emptyList());
         }
 
-        // Metadatos
         dto.setCreatedAt(auction.getCreatedAt());
         dto.setUpdatedAt(auction.getUpdatedAt());
 

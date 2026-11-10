@@ -1,72 +1,39 @@
 package dev.mostapha.bidmaster.application.port.out;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import dev.mostapha.bidmaster.domain.model.auction.Auction;
 import dev.mostapha.bidmaster.domain.model.auction.AuctionCategory;
 import dev.mostapha.bidmaster.domain.model.auction.AuctionStatus;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 /**
- * Puerto de salida para las operaciones de persistencia de subastas.
+ * Puerto de salida para la persistencia de subastas.
  */
 public interface AuctionRepository {
-    
-    /**
-     * Guarda una nueva subasta o actualiza una existente
-     */
-    Mono<Auction> save(Auction auction);
-    
-    /**
-     * Busca una subasta por su ID
-     */
-    Mono<Auction> findById(UUID id);
-    
-    /**
-     * Busca una subasta por su slug
-     */
-    Mono<Auction> findBySlug(String slug);
-    
-    /**
-     * Busca subastas según filtros aplicados
-     */
-    Flux<Auction> findByFilters(Map<String, Object> filters);
-    
-    /**
-     * Busca subastas por vendedor
-     */
-    Flux<Auction> findBySellerId(UUID sellerId);
-    
-    /**
-     * Busca subastas por categoría
-     */
-    Flux<Auction> findByCategory(AuctionCategory category);
-    
-    /**
-     * Busca subastas por estado
-     */
-    Flux<Auction> findByStatus(AuctionStatus status);
-    
-    /**
-     * Busca subastas por rango de precios
-     */
-    Flux<Auction> findByPriceRange(BigDecimal minPrice, BigDecimal maxPrice);
-    
-    /**
-     * Busca subastas próximas a finalizar
-     */
-    Flux<Auction> findEndingSoon(int hours);
-    
-    /**
-     * Busca subastas más populares (con más pujas)
-     */
-    Flux<Auction> findMostPopular(int limit);
-    
-    /**
-     * Elimina una subasta
-     */
-    Mono<Void> deleteById(UUID id);
+
+    Auction save(Auction auction);
+
+    Optional<Auction> findById(UUID id);
+
+    Optional<Auction> findBySlug(String slug);
+
+    List<Auction> findByFilters(Map<String, Object> filters);
+
+    List<Auction> findBySellerId(UUID sellerId);
+
+    List<Auction> findByCategory(AuctionCategory category);
+
+    List<Auction> findByStatus(AuctionStatus status);
+
+    List<Auction> findByPriceRange(BigDecimal minPrice, BigDecimal maxPrice);
+
+    List<Auction> findEndingSoon(int hours);
+
+    List<Auction> findMostPopular(int limit);
+
+    void deleteById(UUID id);
 }

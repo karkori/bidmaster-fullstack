@@ -1,7 +1,7 @@
 services:
-  
   postgres:
-    image: postgres:16-alpine
+    image: postgres:17-alpine
+    container_name: bidmaster-postgres
     ports:
       - "5432:5432"
     environment:
@@ -11,13 +11,14 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d bidmaster"]
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
 
   minio:
-    image: minio/minio:RELEASE.2023-01-20T02-05-44Z
+    image: minio/minio:latest
     container_name: bidmaster-minio
     ports:
       - "9000:9000"
@@ -33,19 +34,8 @@ services:
       interval: 30s
       timeout: 20s
       retries: 3
-
-  clamav:
-    image: clamav/clamav:latest
-    container_name: bidmaster-clamav
-    ports:
-      - "3310:3310"
-    volumes:
-      - clamav_data:/var/lib/clamav
-    environment:
-      - CLAMAV_NO_MILTERD=true
     restart: unless-stopped
 
 volumes:
   postgres_data:
   minio_data:
-  clamav_data:

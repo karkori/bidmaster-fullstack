@@ -1,6 +1,8 @@
 package dev.mostapha.bidmaster.adapter.out.persistence;
 
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Component;
@@ -8,124 +10,83 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import dev.mostapha.bidmaster.adapter.out.persistence.entity.UserEntity;
+import dev.mostapha.bidmaster.adapter.out.persistence.repository.JpaUserRepository;
 import dev.mostapha.bidmaster.application.port.out.UserRepository;
 import dev.mostapha.bidmaster.domain.model.user.Address;
 import dev.mostapha.bidmaster.domain.model.user.User;
 import dev.mostapha.bidmaster.domain.model.user.UserRole;
 import dev.mostapha.bidmaster.domain.model.user.UserStatus;
-import dev.mostapha.bidmaster.infrastructure.persistence.entities.UserEntity;
-import dev.mostapha.bidmaster.infrastructure.persistence.repositories.InfraUserRepository;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 /**
- * Adaptador de salida que implementa el puerto de repositorio de usuarios.
- * Conecta el dominio con la infraestructura de persistencia.
+ * Adaptador de salida JPA para el repositorio de usuarios.
  */
 @Component
 public class UserRepositoryAdapter implements UserRepository {
 
-    private final InfraUserRepository userRepository;
+    private final JpaUserRepository userRepository;
     private final ObjectMapper objectMapper;
 
-    public UserRepositoryAdapter(InfraUserRepository userRepository, ObjectMapper objectMapper) {
+    public UserRepositoryAdapter(JpaUserRepository userRepository, ObjectMapper objectMapper) {
         this.userRepository = userRepository;
         this.objectMapper = objectMapper;
     }
 
     @Override
-    public Mono<User> save(User user) {
-        return Mono.just(user)
-                .map(this::mapToEntity)
-                .flatMap(entity -> {
-                    // Verificamos si es un nuevo usuario o una actualización
-                    // Si createdAt y updatedAt son iguales o cercanos, probablemente es un nuevo usuario
-                    if (entity.getCreatedAt() != null && entity.getUpdatedAt() != null &&
-                        Math.abs(entity.getCreatedAt().toEpochSecond(java.time.ZoneOffset.UTC) - 
-                                entity.getUpdatedAt().toEpochSecond(java.time.ZoneOffset.UTC)) < 10) {
-                        // Es un nuevo usuario, usamos inserción explícita
-                        return userRepository.insertUser(entity)
-                                .then(Mono.just(entity));
-                    } else {
-                        // Es una actualización, usamos el método save estándar
-                        return userRepository.save(entity);
-                    }
-                })
-                .map(this::mapToDomain);
+    public User save(User user) {
+        UserEntity entity = mapToEntity(user);
+        if (!userRepository.existsById(entity.getId())) {
+            entity.setVersion(null);
+        }
+        UserEntity saved = userRepository.save(entity);
+        return mapToDomain(saved);
     }
 
     @Override
-    public Mono<User> updateUser(User user) {
-        return Mono.just(user)
-                .map(this::mapToEntity)
-                .flatMap(entity -> userRepository.updateUser(entity)
-                        .then(userRepository.findById(entity.getId())))
-                .map(this::mapToDomain);
+    public User updateUser(User user) {
+        return save(user);
     }
 
     @Override
-    public Mono<User> findById(UUID id) {
-        return userRepository.findById(id)
-                .map(this::mapToDomain);
+    public Optional<User> findById(UUID id) {
+        return userRepository.findById(id).map(this::mapToDomain);
     }
 
     @Override
-    public Mono<User> findByUsername(String username) {
-        return userRepository.findByUsername(username)
-                .map(this::mapToDomain);
+    public Optional<User> findByUsername(String username) {
+        return userRepository.findByUsername(username).map(this::mapToDomain);
     }
 
     @Override
-    public Mono<User> findByEmail(String email) {
-        return userRepository.findByEmail(email)
-                .map(this::mapToDomain);
+    public Optional<User> findByEmail(String email) {
+        return userRepository.findByEmail(email).map(this::mapToDomain);
     }
 
     @Override
-    public Flux<User> findAll() {
-        return userRepository.findAll()
-                .map(this::mapToDomain);
+    public List<User> findAll() {
+        return userRepository.findAll().stream().map(this::mapToDomain).toList();
     }
 
     @Override
-    public Flux<User> findByStatus(UserStatus status) {
-        return userRepository.findByStatus(status.name())
-                .map(this::mapToDomain);
+    public List<User> findByStatus(UserStatus status) {
+        return userRepository.findByStatus(status.name()).stream().map(this::mapToDomain).toList();
     }
 
     @Override
-    public Mono<Boolean> existsByUsername(String username) {
+    public boolean existsByUsername(String username) {
         return userRepository.existsByUsername(username);
     }
 
     @Override
-    public Mono<Boolean> existsByEmail(String email) {
+    public boolean existsByEmail(String email) {
         return userRepository.existsByEmail(email);
     }
 
     @Override
-    public Mono<Void> deleteById(UUID id) {
-        return userRepository.deleteById(id);
+    public void deleteById(UUID id) {
+        userRepository.deleteById(id);
     }
 
-    @Override
-    public Mono<Void> updateStatus(UUID id, UserStatus status) {
-        return userRepository.updateUserStatus(id, status.name());
-    }
-
-    @Override
-    public Mono<Void> incrementFailedLoginAttempts(UUID id) {
-        return userRepository.incrementFailedLoginAttempts(id);
-    }
-
-    @Override
-    public Mono<Void> resetFailedLoginAttempts(UUID id) {
-        return userRepository.resetFailedLoginAttempts(id);
-    }
-
-    /**
-     * Mapea una entidad de dominio a una entidad de persistencia
-     */
     private UserEntity mapToEntity(User user) {
         try {
             String addressJson = user.getAddress() != null
@@ -157,12 +118,9 @@ public class UserRepositoryAdapter implements UserRepository {
         }
     }
 
-    /**
-     * Mapea una entidad de persistencia a una entidad de dominio
-     */
     private User mapToDomain(UserEntity entity) {
         Address address = null;
-        if (entity.getAddress() != null) {
+        if (entity.getAddress() != null && !entity.getAddress().isBlank()) {
             try {
                 address = objectMapper.readValue(entity.getAddress(), Address.class);
             } catch (JsonProcessingException e) {

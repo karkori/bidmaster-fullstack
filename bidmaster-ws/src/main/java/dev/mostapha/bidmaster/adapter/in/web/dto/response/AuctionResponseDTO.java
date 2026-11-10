@@ -23,6 +23,7 @@ public class AuctionResponseDTO {
     private BigDecimal currentPrice;
     private BigDecimal minBidIncrement;
     private BigDecimal reservePrice;
+    private BigDecimal depositRequired;
     
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime startDate;
@@ -267,5 +268,13 @@ public class AuctionResponseDTO {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public BigDecimal getDepositRequired() {
+        return depositRequired;
+    }
+
+    public void setDepositRequired(BigDecimal depositRequired) {
+        this.depositRequired = depositRequired;
     }
 }

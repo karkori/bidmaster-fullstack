@@ -5,5 +5,7 @@ package dev.mostapha.bidmaster.domain.model.user;
  */
 public enum UserRole {
     USER,   // Usuario regular
+    BUYER,  // Comprador
+    SELLER, // Vendedor
     ADMIN   // Administrador del sistema
 }

@@ -1,40 +1,41 @@
 package dev.mostapha.bidmaster.adapter.in.web.mapper;
 
+import org.springframework.stereotype.Component;
+
 import dev.mostapha.bidmaster.adapter.in.web.dto.AddressDTO;
 import dev.mostapha.bidmaster.adapter.in.web.dto.request.UserRequestDTO;
 import dev.mostapha.bidmaster.adapter.in.web.dto.response.UserResponseDTO;
 import dev.mostapha.bidmaster.domain.model.user.Address;
 import dev.mostapha.bidmaster.domain.model.user.User;
 import dev.mostapha.bidmaster.domain.model.user.UserRole;
-import org.springframework.stereotype.Component;
 
 /**
  * Mapper para convertir entre entidades de dominio y DTOs.
  */
 @Component
 public class UserMapper {
-    
+
     /**
      * Convierte un UserRequestDTO a una entidad de dominio User para registro.
      */
     public User toUserForRegistration(UserRequestDTO dto) {
-        UserRole role = UserRole.valueOf(dto.getRole() != null ? dto.getRole() : "USER");
-        
+        UserRole role = parseRole(dto.getRole(), UserRole.USER);
+
         User user = User.create(
-            dto.getUsername(),
-            dto.getEmail(),
-            dto.getPassword(), // Nota: En un caso real, deberías cifrar la contraseña antes
-            role
+                dto.getUsername(),
+                dto.getEmail(),
+                dto.getPassword(),
+                role
         );
-        
+
         if (dto.getFirstName() != null) user.setFirstName(dto.getFirstName());
         if (dto.getLastName() != null) user.setLastName(dto.getLastName());
         if (dto.getPhone() != null) user.setPhone(dto.getPhone());
         if (dto.getAddress() != null) user.setAddress(toAddress(dto.getAddress()));
-        
+
         return user;
     }
-    
+
     /**
      * Actualiza un usuario existente con los datos de un DTO.
      */
@@ -46,11 +47,13 @@ public class UserMapper {
         if (dto.getLastName() != null) existingUser.setLastName(dto.getLastName());
         if (dto.getPhone() != null) existingUser.setPhone(dto.getPhone());
         if (dto.getAddress() != null) existingUser.setAddress(toAddress(dto.getAddress()));
-        if (dto.getRole() != null) existingUser.setRole(UserRole.valueOf(dto.getRole()));
-        
+        if (dto.getRole() != null && !dto.getRole().isBlank()) {
+            existingUser.setRole(parseRole(dto.getRole(), existingUser.getRole()));
+        }
+
         return existingUser;
     }
-    
+
     /**
      * Convierte una entidad User a un UserResponseDTO.
      */
@@ -62,11 +65,11 @@ public class UserMapper {
         dto.setFirstName(user.getFirstName());
         dto.setLastName(user.getLastName());
         dto.setPhone(user.getPhone());
-        
+
         if (user.getAddress() != null) {
             dto.setAddress(toAddressDTO(user.getAddress()));
         }
-        
+
         dto.setStatus(user.getStatus().name());
         dto.setRole(user.getRole().name());
         dto.setLastLogin(user.getLastLogin());
@@ -75,10 +78,10 @@ public class UserMapper {
         dto.setReputation(user.getReputation());
         dto.setCreatedAt(user.getCreatedAt());
         dto.setUpdatedAt(user.getUpdatedAt());
-        
+
         return dto;
     }
-    
+
     /**
      * Convierte una entidad Address a un AddressDTO.
      */
@@ -91,17 +94,28 @@ public class UserMapper {
         dto.setCountry(address.getCountry());
         return dto;
     }
-    
+
     /**
      * Convierte un AddressDTO a una entidad Address.
      */
     public Address toAddress(AddressDTO dto) {
         return new Address(
-            dto.getStreet(),
-            dto.getCity(),
-            dto.getState(),
-            dto.getZipCode(),
-            dto.getCountry()
+                dto.getStreet(),
+                dto.getCity(),
+                dto.getState(),
+                dto.getZipCode(),
+                dto.getCountry()
         );
+    }
+
+    private UserRole parseRole(String rawRole, UserRole defaultRole) {
+        if (rawRole == null || rawRole.isBlank()) {
+            return defaultRole;
+        }
+        try {
+            return UserRole.valueOf(rawRole.trim().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Rol de usuario no válido: " + rawRole);
+        }
     }
 }

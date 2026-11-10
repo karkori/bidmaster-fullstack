@@ -1,58 +1,60 @@
 spring:
   profiles:
-    active: dev # Activa el perfil de desarrollo
+    active: dev
   application:
     name: BidMaster
-  # Configuración R2DBC para PostgreSQL
-  r2dbc:
-    url: r2dbc:postgresql://localhost:5432/bidmaster
-    username: postgres
-    password: postgres
-    pool:
-      initial-size: 5
-      max-size: 20
+  threads:
+    virtual:
+      enabled: true
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/bidmaster}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
     properties:
-      schema: public  # Especificar explícitamente el esquema
-  # Configuración para Flyway (migraciones de base de datos)
+      hibernate:
+        format_sql: true
+
   flyway:
     enabled: true
-    url: jdbc:postgresql://localhost:5432/bidmaster
-    user: postgres
-    password: postgres
     baseline-on-migrate: true
-    clean-disabled: false     # Permite la limpieza de la base de datos
-    validate-on-migrate: true # Valida las migraciones antes de aplicarlas
-    locations: classpath:db/migration # Ubicación de los scripts de migración
-    schemas: public  # Especificar explícitamente el esquema
+    validate-on-migrate: true
+    locations: classpath:db/migration
+    schemas: public
 
-  sql:
-    init:
-      mode: always
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 25MB
 
-  # Asegurarse de que Flyway se ejecute antes de R2DBC
-  data:
-    r2dbc:
-      repositories:
-        enabled: true
-
-# Configuración de logging
 logging:
   level:
-    org:
-      springframework:
-        r2dbc: DEBUG
-    io:
-      r2dbc:
-        postgresql: DEBUG
-    dev:
-      mostapha:
-        bidmaster: DEBUG
+    org.springframework.security: INFO
+    org.hibernate.SQL: DEBUG
+    dev.mostapha.bidmaster: DEBUG
 
-minio: 
-  endpoint: http://localhost:9000
-  access-key: minioadmin
-  secret-key: minioadmin
-  bucket: bidmaster
+minio:
+  endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
+  access-key: ${MINIO_ACCESS_KEY:minioadmin}
+  secret-key: ${MINIO_SECRET_KEY:minioadmin}
+  bucket: ${MINIO_BUCKET:bidmaster}
+
+app:
+  images:
+    bucket-name: ${MINIO_BUCKET:bidmaster-images}
+  security:
+    jwt:
+      secret: ${JWT_SECRET:YmlkbWFzdGVyLXNlY3JldC1rZXktZm9yLWp3dC1hdXRoZW50aWNhdGlvbi0yMDI2LTI1Ni1iaXRz}
+      expiration-ms: 86400000
 
 server:
   port: 8080
