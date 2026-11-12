@@ -37,6 +37,12 @@ bidmaster-fullstack/
 
 ## 3. Comandos de Desarrollo y Verificación
 
+### Preparación automática del entorno (VMs efímeras / nueva sesión)
+En entornos efímeros donde la imagen base trae Java 17 o no tiene `openspec` en `PATH`, activa (o instala si faltan) **JDK 25** y **OpenSpec CLI** desde la caché persistente (`~/.gemini/tools/`) ejecutando desde la raíz:
+```bash
+source scripts/setup-env.sh
+```
+
 ### Backend (`bidmaster-ws/`)
 > Requiere **JDK 25** configurado (`java.version = 25` en `pom.xml`).
 ```bash
