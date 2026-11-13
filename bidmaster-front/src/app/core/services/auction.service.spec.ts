@@ -124,4 +124,31 @@ describe('AuctionService', () => {
     expect(req.request.body).toEqual({ amount: 1100 });
     req.flush(updatedAuction);
   });
+
+  it('should pause, resume, and cancel an auction via lifecycle endpoints', () => {
+    service.pauseAuction('auc-1').subscribe(res => {
+      expect(res.status).toBe('PAUSED');
+      expect(res.pausesUsed).toBe(1);
+    });
+    const pauseReq = httpTestingController.expectOne(`${environment.apiUrl}/auctions/auc-1/pause`);
+    expect(pauseReq.request.method).toBe('POST');
+    expect(pauseReq.request.body).toEqual({});
+    pauseReq.flush({ id: 'auc-1', status: 'PAUSED', pausesUsed: 1 });
+
+    service.resumeAuction('auc-1').subscribe(res => {
+      expect(res.status).toBe('ACTIVE');
+    });
+    const resumeReq = httpTestingController.expectOne(`${environment.apiUrl}/auctions/auc-1/resume`);
+    expect(resumeReq.request.method).toBe('POST');
+    expect(resumeReq.request.body).toEqual({});
+    resumeReq.flush({ id: 'auc-1', status: 'ACTIVE', pausesUsed: 1 });
+
+    service.cancelAuction('auc-1').subscribe(res => {
+      expect(res.status).toBe('CANCELLED');
+    });
+    const cancelReq = httpTestingController.expectOne(`${environment.apiUrl}/auctions/auc-1/cancel`);
+    expect(cancelReq.request.method).toBe('POST');
+    expect(cancelReq.request.body).toEqual({});
+    cancelReq.flush({ id: 'auc-1', status: 'CANCELLED' });
+  });
 });

@@ -15,6 +15,10 @@ public interface ImageUseCase {
     Image storeImage(byte[] imageData, String filename, String contentType,
                      UUID uploadedBy, ImageType type, UUID referenceId);
 
+    Image storeImage(byte[] imageData, String filename, String contentType,
+                     UUID uploadedBy, ImageType type, UUID referenceId,
+                     boolean isPrimary, int displayOrder);
+
     Image saveImageMetadata(Image image);
 
     Optional<Image> getImageById(UUID id);
@@ -24,6 +28,10 @@ public interface ImageUseCase {
     boolean deleteImage(UUID id);
 
     long deleteImages(List<UUID> ids);
+
+    Image setPrimaryImage(UUID imageId);
+
+    List<Image> reorderImages(UUID referenceId, ImageType type, List<UUID> orderedIds);
 
     Optional<String> generatePresignedUrl(UUID id, Integer expirationTimeSeconds);
 

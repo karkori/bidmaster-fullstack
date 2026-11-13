@@ -111,6 +111,7 @@ Feature: Ciclo de Vida de Subastas, Modificación, Pausas y Búsquedas
     Then status 200
     * match response.status == 'ACTIVE'
     * match response.startDate == '#notnull'
+    * match response.pausesUsed == 0
 
     # Pausa 1
     Given path 'auctions', auctionId, 'pause'
@@ -118,6 +119,7 @@ Feature: Ciclo de Vida de Subastas, Modificación, Pausas y Búsquedas
     When method post
     Then status 200
     * match response.status == 'PAUSED'
+    * match response.pausesUsed == 1
 
     # Reanudar 1
     Given path 'auctions', auctionId, 'resume'
@@ -125,6 +127,7 @@ Feature: Ciclo de Vida de Subastas, Modificación, Pausas y Búsquedas
     When method post
     Then status 200
     * match response.status == 'ACTIVE'
+    * match response.pausesUsed == 1
 
     # Pausa 2
     Given path 'auctions', auctionId, 'pause'
@@ -132,6 +135,7 @@ Feature: Ciclo de Vida de Subastas, Modificación, Pausas y Búsquedas
     When method post
     Then status 200
     * match response.status == 'PAUSED'
+    * match response.pausesUsed == 2
 
     # Reanudar 2
     Given path 'auctions', auctionId, 'resume'
@@ -139,6 +143,7 @@ Feature: Ciclo de Vida de Subastas, Modificación, Pausas y Búsquedas
     When method post
     Then status 200
     * match response.status == 'ACTIVE'
+    * match response.pausesUsed == 2
 
     # Intento de Pausa 3 (Debe fallar porque el límite de pausas permitidas es 2)
     Given path 'auctions', auctionId, 'pause'
@@ -188,3 +193,131 @@ Feature: Ciclo de Vida de Subastas, Modificación, Pausas y Búsquedas
     When method get
     Then status 200
     And match response[*].id contains watchId
+
+  Scenario: Edición PUT de borrador con displayName, rechazo 400, cancelación y eliminación de borrador
+    * def endDate = java.time.LocalDateTime.now().plusDays(6).truncatedTo(java.time.temporal.ChronoUnit.SECONDS).toString()
+    * def updatedEndDate = java.time.LocalDateTime.now().plusDays(8).truncatedTo(java.time.temporal.ChronoUnit.SECONDS).toString()
+
+    # Crear borrador inicial
+    Given path 'auctions'
+    And headers authHeader
+    And request
+      """
+      {
+        "title": "Borrador Inicial Subasta",
+        "description": "Descripción inicial del borrador que será editado posteriormente",
+        "category": "COLLECTIBLES",
+        "initialPrice": 150.00,
+        "endDate": "#(endDate)",
+        "condition": "GOOD",
+        "shippingOptions": "STANDARD",
+        "allowPause": false
+      }
+      """
+    When method post
+    Then status 201
+    * def draftId = response.id
+
+    # Actualizar borrador enviando displayName de categoría ('Electrónica')
+    Given path 'auctions', draftId
+    And headers authHeader
+    And request
+      """
+      {
+        "title": "Borrador Editado Electrónica",
+        "description": "Descripción actualizada del producto electrónico en perfecto estado",
+        "category": "Electrónica",
+        "initialPrice": 220.00,
+        "minBidIncrement": 10.00,
+        "depositRequired": 15.00,
+        "endDate": "#(updatedEndDate)",
+        "condition": "LIKE_NEW",
+        "shippingOptions": "EXPRESS",
+        "allowPause": true
+      }
+      """
+    When method put
+    Then status 200
+    And match response.title == 'Borrador Editado Electrónica'
+    And match response.category == 'Electrónica'
+    And match response.initialPrice == 220.0
+    And match response.allowPause == true
+    And match response.pausesUsed == 0
+
+    # Rechazo 400 al actualizar con categoría desconocida
+    Given path 'auctions', draftId
+    And headers authHeader
+    And request
+      """
+      {
+        "title": "Borrador Categoría Inválida",
+        "description": "Descripción válida para probar el rechazo de categoría inválida",
+        "category": "CATEGORIA_DESCONOCIDA",
+        "initialPrice": 220.00,
+        "endDate": "#(updatedEndDate)",
+        "condition": "GOOD",
+        "shippingOptions": "STANDARD"
+      }
+      """
+    When method put
+    Then status 400
+    And match response.title == 'Solicitud no válida'
+
+    # Crear segundo borrador y eliminarlo
+    Given path 'auctions'
+    And headers authHeader
+    And request
+      """
+      {
+        "title": "Borrador Para Eliminar",
+        "description": "Este borrador será eliminado directamente sin publicarse",
+        "category": "OTHERS",
+        "initialPrice": 40.00,
+        "endDate": "#(endDate)",
+        "condition": "GOOD",
+        "shippingOptions": "STANDARD"
+      }
+      """
+    When method post
+    Then status 201
+    * def deleteDraftId = response.id
+
+    Given path 'auctions', deleteDraftId
+    And headers authHeader
+    When method delete
+    Then status 204
+
+    Given path 'auctions', deleteDraftId
+    When method get
+    Then status 404
+
+    # Publicar primer borrador y comprobar que no se puede editar ni eliminar en ACTIVE, pero sí cancelar
+    Given path 'auctions', draftId, 'publish'
+    And headers authHeader
+    When method post
+    Then status 200
+    And match response.status == 'ACTIVE'
+
+    Given path 'auctions', draftId
+    And headers authHeader
+    And request
+      """
+      {
+        "title": "Intento Edicion Activa",
+        "description": "No debería permitirse editar una subasta que ya está activa",
+        "category": "ELECTRONICS",
+        "initialPrice": 250.00,
+        "endDate": "#(updatedEndDate)",
+        "condition": "GOOD",
+        "shippingOptions": "STANDARD"
+      }
+      """
+    When method put
+    Then status 400
+    And match response.title == 'Operación no permitida en el estado actual'
+
+    Given path 'auctions', draftId, 'cancel'
+    And headers authHeader
+    When method post
+    Then status 200
+    And match response.status == 'CANCELLED'

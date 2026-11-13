@@ -1,162 +1,303 @@
 <div class="mx-auto">
   <div class="bg-white rounded-lg shadow-md overflow-hidden">
-    <div
-      class="p-6 bg-gradient-to-r from-emerald-600 to-emerald-800 text-white"
-      >
-      <h1 class="text-2xl font-bold">Crear nueva subasta</h1>
+    <div class="p-6 bg-gradient-to-r from-emerald-600 to-emerald-800 text-white">
+      <h1 class="text-2xl font-bold">
+        @if (isEditMode()) {
+          Editar borrador de subasta
+        } @else {
+          Crear nueva subasta
+        }
+      </h1>
       <p class="opacity-80">
-        Publica tu artículo para que otros usuarios pujen por él
+        @if (isEditMode()) {
+          Actualiza la información o gestiona las imágenes antes de publicar tu subasta
+        } @else {
+          Publica tu artículo para que otros usuarios pujen por él
+        }
       </p>
     </div>
 
     <div class="p-6">
-      <form [formGroup]="auctionForm" (ngSubmit)="onSubmit()" class="space-y-6">
-        <div>
-          <h3 class="text-lg font-medium mb-4">Información básica</h3>
+      @if (loadingAuction()) {
+        <app-loading-spinner message="Cargando datos del borrador..." />
+      } @else if (editBlockedReason()) {
+        <div class="rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-800" role="alert">
+          <p class="font-medium">{{ editBlockedReason() }}</p>
+          <p class="mt-3">
+            <a
+              routerLink="/dashboard/my-auctions"
+              class="inline-flex items-center rounded-md bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-500"
+            >
+              Volver a Mis subastas
+            </a>
+          </p>
+        </div>
+      } @else {
+        @if (errorMessage) {
+          <div class="mb-6 rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-800" role="alert">
+            <p>{{ errorMessage }}</p>
+            @if (!isEditMode() && createdDraftAuction(); as draft) {
+              <p class="mt-2">
+                <a [routerLink]="['/auctions', draft.slug || draft.id]" class="font-semibold underline text-red-900 hover:text-red-700">
+                  Ver borrador guardado ({{ draft.title }})
+                </a>
+              </p>
+            }
+          </div>
+        }
 
-          <div class="grid grid-cols-1 gap-6 mb-6">
-            <div>
-              <label for="title" appFormLabel [required]="true">Título del artículo</label>
-              <input
-                type="text"
-                id="title"
-                formControlName="title"
-                appFormControl
-                [controlStatus]="auctionForm.get('title')?.invalid && auctionForm.get('title')?.touched ? 'invalid' : 'default'"
+        <form [formGroup]="auctionForm" (ngSubmit)="onSubmit()" class="space-y-6">
+          <div>
+            <h3 class="text-lg font-medium mb-4">Información básica</h3>
+
+            <div class="grid grid-cols-1 gap-6 mb-6">
+              <div>
+                <label for="title" appFormLabel [required]="true">Título del artículo</label>
+                <input
+                  type="text"
+                  id="title"
+                  formControlName="title"
+                  appFormControl
+                  [controlStatus]="auctionForm.get('title')?.invalid && auctionForm.get('title')?.touched ? 'invalid' : 'default'"
                 />
-              @if (auctionForm.get('title')?.invalid &&
-                auctionForm.get('title')?.touched) {
-                <p class="mt-1 text-sm text-red-600">El título es obligatorio</p>
-              }
-            </div>
+                @if (auctionForm.get('title')?.invalid && auctionForm.get('title')?.touched) {
+                  <p class="mt-1 text-sm text-red-600">
+                    {{ getControlError('title') || 'El título debe tener entre 5 y 100 caracteres' }}
+                  </p>
+                }
+              </div>
 
-            <div>
-              <label for="description" appFormLabel [required]="true">Descripción detallada</label>
-              <textarea
-                id="description"
-                formControlName="description"
-                rows="4"
-                appFormControl
-                [controlStatus]="auctionForm.get('description')?.invalid && auctionForm.get('description')?.touched ? 'invalid' : 'default'"
-              ></textarea>
-              @if (auctionForm.get('description')?.invalid &&
-                auctionForm.get('description')?.touched) {
-                <p class="mt-1 text-sm text-red-600">
-                  La descripción es obligatoria y debe tener al menos 20
-                  caracteres
-                </p>
-              }
-            </div>
+              <div>
+                <label for="description" appFormLabel [required]="true">Descripción detallada</label>
+                <textarea
+                  id="description"
+                  formControlName="description"
+                  rows="4"
+                  appFormControl
+                  [controlStatus]="auctionForm.get('description')?.invalid && auctionForm.get('description')?.touched ? 'invalid' : 'default'"
+                ></textarea>
+                @if (auctionForm.get('description')?.invalid && auctionForm.get('description')?.touched) {
+                  <p class="mt-1 text-sm text-red-600">
+                    {{ getControlError('description') || 'La descripción es obligatoria y debe tener entre 20 y 1000 caracteres' }}
+                  </p>
+                }
+              </div>
 
-            <div>
-              <label for="category" appFormLabel [required]="true">Categoría</label>
-              <select
-                id="category"
-                formControlName="category"
-                appFormControl
-                [controlStatus]="auctionForm.get('category')?.invalid && auctionForm.get('category')?.touched ? 'invalid' : 'default'"
+              <div>
+                <label for="category" appFormLabel [required]="true">Categoría</label>
+                <select
+                  id="category"
+                  formControlName="category"
+                  appFormControl
+                  [controlStatus]="auctionForm.get('category')?.invalid && auctionForm.get('category')?.touched ? 'invalid' : 'default'"
                 >
-                <option value="">Selecciona una categoría</option>
-                <option value="electronics">Electrónica</option>
-                <option value="fashion">Moda</option>
-                <option value="home">Hogar y Jardín</option>
-                <option value="collectibles">Coleccionables</option>
-                <option value="art">Arte</option>
-                <option value="sports">Deportes</option>
-                <option value="toys">Juguetes</option>
-                <option value="vehicles">Vehículos</option>
-                <option value="others">Otros</option>
-              </select>
-              @if (auctionForm.get('category')?.invalid &&
-                auctionForm.get('category')?.touched) {
-                <p class="mt-1 text-sm text-red-600">Selecciona una categoría</p>
-              }
+                  <option value="">Selecciona una categoría</option>
+                  <option value="ELECTRONICS">Electrónica</option>
+                  <option value="FASHION">Moda</option>
+                  <option value="HOME">Hogar y Jardín</option>
+                  <option value="COLLECTIBLES">Coleccionables</option>
+                  <option value="ART">Arte</option>
+                  <option value="SPORTS">Deportes</option>
+                  <option value="TOYS">Juguetes</option>
+                  <option value="VEHICLES">Vehículos</option>
+                  <option value="OTHERS">Otros</option>
+                </select>
+                @if (auctionForm.get('category')?.invalid && auctionForm.get('category')?.touched) {
+                  <p class="mt-1 text-sm text-red-600">
+                    {{ getControlError('category') || 'Selecciona una categoría' }}
+                  </p>
+                }
+              </div>
             </div>
           </div>
-        </div>
 
-        <div class="pt-4 border-t border-gray-200">
-          <h3 class="text-lg font-medium mb-4">Detalles de la subasta</h3>
+          <div class="pt-4 border-t border-gray-200">
+            <h3 class="text-lg font-medium mb-4">Detalles de la subasta</h3>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div>
-              <label for="initialPrice" appFormLabel [required]="true">Precio inicial ($)</label>
-              <input
-                type="number"
-                id="initialPrice"
-                formControlName="initialPrice"
-                min="0.01"
-                step="0.01"
-                appFormControl
-                [controlStatus]="auctionForm.get('initialPrice')?.invalid && auctionForm.get('initialPrice')?.touched ? 'invalid' : 'default'"
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div>
+                <label for="initialPrice" appFormLabel [required]="true">Precio inicial (€)</label>
+                <input
+                  type="number"
+                  id="initialPrice"
+                  formControlName="initialPrice"
+                  min="0.01"
+                  step="0.01"
+                  appFormControl
+                  [controlStatus]="auctionForm.get('initialPrice')?.invalid && auctionForm.get('initialPrice')?.touched ? 'invalid' : 'default'"
                 />
-              @if (auctionForm.get('initialPrice')?.invalid &&
-                auctionForm.get('initialPrice')?.touched) {
-                <p class="mt-1 text-sm text-red-600">
-                  El precio inicial debe ser mayor que 0
-                </p>
-              }
+                @if (auctionForm.get('initialPrice')?.invalid && auctionForm.get('initialPrice')?.touched) {
+                  <p class="mt-1 text-sm text-red-600">
+                    {{ getControlError('initialPrice') || 'El precio inicial debe ser mayor que 0' }}
+                  </p>
+                }
+              </div>
+
+              <div>
+                <label for="minBidIncrement" appFormLabel>Incremento mínimo (€)</label>
+                <input
+                  type="number"
+                  id="minBidIncrement"
+                  formControlName="minBidIncrement"
+                  min="0.01"
+                  step="0.01"
+                  appFormControl
+                  [controlStatus]="auctionForm.get('minBidIncrement')?.invalid && auctionForm.get('minBidIncrement')?.touched ? 'invalid' : 'default'"
+                />
+                @if (auctionForm.get('minBidIncrement')?.invalid && auctionForm.get('minBidIncrement')?.touched) {
+                  <p class="mt-1 text-sm text-red-600">
+                    {{ getControlError('minBidIncrement') || 'El incremento mínimo debe ser mayor que 0' }}
+                  </p>
+                } @else {
+                  <p class="mt-1 text-xs text-gray-500">
+                    Cantidad mínima que debe aumentar cada puja
+                  </p>
+                }
+              </div>
+
+              <div>
+                <label for="endDate" appFormLabel [required]="true">Fecha de finalización</label>
+                <input
+                  type="datetime-local"
+                  id="endDate"
+                  formControlName="endDate"
+                  appFormControl
+                  [controlStatus]="auctionForm.get('endDate')?.invalid && auctionForm.get('endDate')?.touched ? 'invalid' : 'default'"
+                />
+                @if (auctionForm.get('endDate')?.invalid && auctionForm.get('endDate')?.touched) {
+                  <p class="mt-1 text-sm text-red-600">
+                    {{ getControlError('endDate') || 'Selecciona una fecha válida (al menos 1 hora en el futuro)' }}
+                  </p>
+                }
+              </div>
+
+              <div>
+                <label for="depositRequired" appFormLabel>Depósito de garantía requerido (€)</label>
+                <input
+                  type="number"
+                  id="depositRequired"
+                  formControlName="depositRequired"
+                  min="0"
+                  step="0.01"
+                  appFormControl
+                  [controlStatus]="auctionForm.get('depositRequired')?.invalid && auctionForm.get('depositRequired')?.touched ? 'invalid' : 'default'"
+                />
+                @if (auctionForm.get('depositRequired')?.invalid && auctionForm.get('depositRequired')?.touched) {
+                  <p class="mt-1 text-sm text-red-600">
+                    {{ getControlError('depositRequired') || 'El depósito no puede ser negativo' }}
+                  </p>
+                } @else {
+                  <p class="mt-1 text-xs text-gray-500">
+                    Importe bloqueado al pujar (0 si no requiere depósito)
+                  </p>
+                }
+              </div>
             </div>
 
-            <div>
-              <label for="reservePrice" appFormLabel>Precio de reserva ($)</label>
+            <div class="flex items-center">
               <input
-                type="number"
-                id="reservePrice"
-                formControlName="reservePrice"
-                min="0"
-                step="0.01"
-                appFormControl
-                />
-              <p class="mt-1 text-xs text-gray-500">
-                Precio mínimo para que la venta se concrete (opcional)
-              </p>
-            </div>
-
-            <div>
-              <label for="endDate" appFormLabel [required]="true">Fecha de finalización</label>
-              <input
-                type="datetime-local"
-                id="endDate"
-                formControlName="endDate"
-                appFormControl
-                [controlStatus]="auctionForm.get('endDate')?.invalid && auctionForm.get('endDate')?.touched ? 'invalid' : 'default'"
-                />
-              @if (auctionForm.get('endDate')?.invalid &&
-                auctionForm.get('endDate')?.touched) {
-                <p class="mt-1 text-sm text-red-600">
-                  Selecciona una fecha y hora válida
-                </p>
-              }
-            </div>
-
-            <div>
-              <label for="minBidIncrement" appFormLabel>Incremento mínimo ($)</label>
-              <input
-                type="number"
-                id="minBidIncrement"
-                formControlName="minBidIncrement"
-                min="0.01"
-                step="0.01"
-                appFormControl
-                />
-              <p class="mt-1 text-xs text-gray-500">
-                Cantidad mínima que debe aumentar cada puja
-              </p>
+                id="allowPause"
+                formControlName="allowPause"
+                type="checkbox"
+                class="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+              />
+              <label for="allowPause" class="ml-2 block text-sm text-gray-900">
+                Permitir pausar la subasta temporalmente tras publicarla (máximo 2 pausas)
+              </label>
             </div>
           </div>
-        </div>
 
-        <div class="pt-4 border-t border-gray-200">
-          <h3 class="text-lg font-medium mb-4">Imágenes</h3>
+          <div class="pt-4 border-t border-gray-200">
+            <h3 class="text-lg font-medium mb-4">Imágenes</h3>
 
-          <div class="mb-6">
-            <label class="block text-sm font-medium text-gray-700 mb-2"
-              >Sube imágenes de tu artículo</label
-              >
+            @if (existingImages().length > 0) {
+              <div class="mb-6">
+                <p class="text-sm font-medium text-gray-700 mb-2">
+                  Imágenes guardadas ({{ existingImages().length }})
+                </p>
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                  @for (img of existingImages(); track img.id; let idx = $index) {
+                    <div
+                      class="relative rounded-lg border bg-gray-50 overflow-hidden shadow-sm"
+                      [class.ring-2]="img.primary"
+                      [class.ring-emerald-500]="img.primary"
+                    >
+                      <img
+                        [src]="img.resolvedUrl"
+                        [alt]="img.fileName"
+                        class="h-32 w-full object-cover"
+                      />
+                      @if (img.primary) {
+                        <span class="absolute top-2 left-2 rounded-full bg-emerald-600 px-2 py-0.5 text-xs font-semibold text-white">
+                          Portada
+                        </span>
+                      }
+                      <div class="p-2 space-y-2 bg-white">
+                        <p class="truncate text-xs text-gray-600" [title]="img.fileName">{{ img.fileName }}</p>
+                        <div class="flex items-center justify-between gap-1 text-xs">
+                          @if (!img.primary) {
+                            <button
+                              type="button"
+                              (click)="setExistingPrimaryImage(img.id)"
+                              class="text-emerald-600 hover:text-emerald-800 font-medium"
+                            >
+                              Hacer portada
+                            </button>
+                          } @else {
+                            <span class="text-emerald-700 font-medium">Principal</span>
+                          }
+                          <div class="flex items-center gap-1">
+                            <button
+                              type="button"
+                              [disabled]="idx === 0"
+                              (click)="moveExistingImage(idx, -1)"
+                              class="px-1.5 py-0.5 rounded border text-gray-600 hover:bg-gray-100 disabled:opacity-30"
+                              title="Mover antes"
+                            >
+                              ←
+                            </button>
+                            <button
+                              type="button"
+                              [disabled]="idx === existingImages().length - 1"
+                              (click)="moveExistingImage(idx, 1)"
+                              class="px-1.5 py-0.5 rounded border text-gray-600 hover:bg-gray-100 disabled:opacity-30"
+                              title="Mover después"
+                            >
+                              →
+                            </button>
+                            <button
+                              type="button"
+                              (click)="removeExistingImage(img.id)"
+                              class="px-1.5 py-0.5 rounded text-red-600 hover:bg-red-50 font-medium"
+                              title="Eliminar imagen guardada"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                @if (isEditMode()) {
+                  Añadir nuevas imágenes al borrador
+                } @else {
+                  Sube imágenes de tu artículo
+                }
+              </label>
               <div
-                class="border-2 border-dashed border-gray-300 rounded-md p-6 text-center"
-                >
+                (dragover)="onDragOver($event)"
+                (dragleave)="onDragLeave($event)"
+                (drop)="onDrop($event)"
+                [class]="isDragging
+                  ? 'border-2 border-dashed border-emerald-500 bg-emerald-50 rounded-md p-6 text-center transition-colors'
+                  : 'border-2 border-dashed border-gray-300 rounded-md p-6 text-center transition-colors'"
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
@@ -164,37 +305,108 @@
                   stroke-width="1.5"
                   stroke="currentColor"
                   class="mx-auto h-12 w-12 text-gray-400"
-                  >
+                >
                   <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"
-                    />
+                  />
                 </svg>
                 <div class="mt-2">
-                  <p class="text-sm text-gray-500">PNG, JPG, GIF hasta 5MB</p>
+                  <p class="text-sm text-gray-500">PNG, JPG, WEBP o GIF hasta 5 MB cada una</p>
                 </div>
                 <div class="mt-3">
                   <label
                     for="file-upload"
-                    class="relative cursor-pointer rounded-md bg-white font-medium text-emerald-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-emerald-500 focus-within:ring-offset-2 hover:text-emerald-500"
-                    >
-                    <span>Subir archivos</span>
+                    class="relative cursor-pointer rounded-md bg-white px-3 py-1.5 font-medium text-emerald-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-emerald-500 focus-within:ring-offset-2 hover:text-emerald-500"
+                  >
+                    <span>Seleccionar archivos</span>
                     <input
                       id="file-upload"
                       name="file-upload"
                       type="file"
                       class="sr-only"
                       multiple
-                      accept="image/*"
-                      />
+                      accept="image/png,image/jpeg,image/webp,image/gif"
+                      (change)="onFileSelected($event)"
+                    />
                   </label>
                 </div>
                 <p class="text-xs text-gray-500 mt-2">
                   Arrastra y suelta archivos aquí, o haz clic para seleccionar
                 </p>
               </div>
+
+              @if (imageError) {
+                <p class="mt-2 text-sm text-red-600" role="alert">{{ imageError }}</p>
+              }
             </div>
+
+            @if (pendingImages().length > 0) {
+              <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-4">
+                @for (item of pendingImages(); track item.id; let idx = $index) {
+                  <div class="relative rounded-lg border bg-gray-50 overflow-hidden shadow-sm"
+                    [class.ring-2]="item.isPrimary"
+                    [class.ring-emerald-500]="item.isPrimary"
+                  >
+                    <img
+                      [src]="item.previewUrl"
+                      [alt]="item.file.name"
+                      class="h-32 w-full object-cover"
+                    />
+                    @if (item.isPrimary) {
+                      <span class="absolute top-2 left-2 rounded-full bg-emerald-600 px-2 py-0.5 text-xs font-semibold text-white">
+                        Portada
+                      </span>
+                    }
+                    <div class="p-2 space-y-2 bg-white">
+                      <p class="truncate text-xs text-gray-600" [title]="item.file.name">{{ item.file.name }}</p>
+                      <div class="flex items-center justify-between gap-1 text-xs">
+                        @if (!item.isPrimary) {
+                          <button
+                            type="button"
+                            (click)="setPrimaryImage(item.id)"
+                            class="text-emerald-600 hover:text-emerald-800 font-medium"
+                          >
+                            Hacer portada
+                          </button>
+                        } @else {
+                          <span class="text-emerald-700 font-medium">Principal</span>
+                        }
+                        <div class="flex items-center gap-1">
+                          <button
+                            type="button"
+                            [disabled]="idx === 0"
+                            (click)="moveImage(idx, -1)"
+                            class="px-1.5 py-0.5 rounded border text-gray-600 hover:bg-gray-100 disabled:opacity-30"
+                            title="Mover antes"
+                          >
+                            ←
+                          </button>
+                          <button
+                            type="button"
+                            [disabled]="idx === pendingImages().length - 1"
+                            (click)="moveImage(idx, 1)"
+                            class="px-1.5 py-0.5 rounded border text-gray-600 hover:bg-gray-100 disabled:opacity-30"
+                            title="Mover después"
+                          >
+                            →
+                          </button>
+                          <button
+                            type="button"
+                            (click)="removeImage(item.id)"
+                            class="px-1.5 py-0.5 rounded text-red-600 hover:bg-red-50 font-medium"
+                            title="Eliminar imagen"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
           </div>
 
           <div class="pt-4 border-t border-gray-200">
@@ -208,7 +420,7 @@
                   formControlName="condition"
                   appFormControl
                   [controlStatus]="auctionForm.get('condition')?.invalid && auctionForm.get('condition')?.touched ? 'invalid' : 'default'"
-                  >
+                >
                   <option value="">Selecciona un estado</option>
                   <option value="new">Nuevo</option>
                   <option value="like_new">Como nuevo</option>
@@ -216,10 +428,9 @@
                   <option value="fair">Estado aceptable</option>
                   <option value="poor">Necesita reparación</option>
                 </select>
-                @if (auctionForm.get('condition')?.invalid &&
-                  auctionForm.get('condition')?.touched) {
+                @if (auctionForm.get('condition')?.invalid && auctionForm.get('condition')?.touched) {
                   <p class="mt-1 text-sm text-red-600">
-                    Selecciona el estado del artículo
+                    {{ getControlError('condition') || 'Selecciona el estado del artículo' }}
                   </p>
                 }
               </div>
@@ -231,16 +442,15 @@
                   formControlName="shippingOptions"
                   appFormControl
                   [controlStatus]="auctionForm.get('shippingOptions')?.invalid && auctionForm.get('shippingOptions')?.touched ? 'invalid' : 'default'"
-                  >
+                >
                   <option value="">Selecciona una opción</option>
                   <option value="seller_pays">El vendedor paga el envío</option>
                   <option value="buyer_pays">El comprador paga el envío</option>
                   <option value="pickup_only">Solo recogida en persona</option>
                 </select>
-                @if (auctionForm.get('shippingOptions')?.invalid &&
-                  auctionForm.get('shippingOptions')?.touched) {
+                @if (auctionForm.get('shippingOptions')?.invalid && auctionForm.get('shippingOptions')?.touched) {
                   <p class="mt-1 text-sm text-red-600">
-                    Selecciona una opción de envío
+                    {{ getControlError('shippingOptions') || 'Selecciona una opción de envío' }}
                   </p>
                 }
               </div>
@@ -254,44 +464,61 @@
                 formControlName="terms"
                 type="checkbox"
                 class="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
-                />
+              />
               <label for="terms" class="ml-2 block text-sm text-gray-900">
                 Acepto los
-                <a href="#" class="text-emerald-600 hover:text-emerald-500"
-                  >Términos y Condiciones</a
-                  >
-                  para la publicación de subastas
-                </label>
-              </div>
-              @if (auctionForm.get('terms')?.invalid &&
-                auctionForm.get('terms')?.touched) {
-                <p class="mt-1 text-sm text-red-600">
-                  Debes aceptar los términos y condiciones
-                </p>
-              }
+                <a href="#" class="text-emerald-600 hover:text-emerald-500">Términos y Condiciones</a>
+                para la publicación de subastas
+              </label>
             </div>
+            @if (auctionForm.get('terms')?.invalid && auctionForm.get('terms')?.touched) {
+              <p class="mt-1 text-sm text-red-600">
+                {{ getControlError('terms') || 'Debes aceptar los términos y condiciones' }}
+              </p>
+            }
+          </div>
 
-            <div class="pt-4 border-t border-gray-200">
-              <div class="flex justify-end">
-                <button
-                  type="button"
-                  class="mr-3 rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
-                  >
-                  Guardar borrador
-                </button>
-                <button
-                  type="submit"
-                  [disabled]="auctionForm.invalid"
-                  class="rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                  @if (false) {
-                    <span class="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-white border-r-transparent align-[-0.125em] mr-2"></span>
-                  }
-                  Publicar subasta
-                </button>
-              </div>
+          <div class="pt-4 border-t border-gray-200">
+            <div class="flex flex-wrap justify-end gap-3">
+              @if (isEditMode()) {
+                <a
+                  routerLink="/dashboard/my-auctions"
+                  class="rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+                >
+                  Volver
+                </a>
+              }
+              <button
+                type="button"
+                [disabled]="isSubmitting"
+                (click)="submitAuction(false)"
+                class="rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                @if (isSubmitting && submitMode === 'draft') {
+                  <span>Guardando...</span>
+                } @else if (isEditMode()) {
+                  <span>Guardar cambios</span>
+                } @else {
+                  <span>Guardar borrador</span>
+                }
+              </button>
+              <button
+                type="submit"
+                [disabled]="isSubmitting"
+                class="rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                @if (isSubmitting && submitMode === 'publish') {
+                  <span>Publicando...</span>
+                } @else if (isEditMode()) {
+                  <span>Guardar y publicar</span>
+                } @else {
+                  <span>Publicar subasta</span>
+                }
+              </button>
             </div>
-          </form>
-        </div>
-      </div>
+          </div>
+        </form>
+      }
     </div>
+  </div>
+</div>

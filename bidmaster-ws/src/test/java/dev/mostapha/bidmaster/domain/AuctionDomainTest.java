@@ -7,6 +7,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
@@ -167,5 +168,21 @@ class AuctionDomainTest {
         auction.finish();
         assertEquals(AuctionStatus.FINISHED, auction.getStatus());
         assertFalse(auction.canBid(bidderId1, new BigDecimal("200.00")));
+    }
+
+    @Test
+    @DisplayName("Debe resolver categorías por nombre de enum y displayName ignorando mayúsculas y tildes")
+    void shouldResolveCategoryByEnumNameAndDisplayName() {
+        assertEquals(AuctionCategory.ELECTRONICS, AuctionCategory.fromString("ELECTRONICS"));
+        assertEquals(AuctionCategory.ELECTRONICS, AuctionCategory.fromString("electronics"));
+        assertEquals(AuctionCategory.ELECTRONICS, AuctionCategory.fromString("Electrónica"));
+        assertEquals(AuctionCategory.ELECTRONICS, AuctionCategory.fromString("  electronica  "));
+        assertEquals(AuctionCategory.HOME, AuctionCategory.fromString("Hogar y Jardín"));
+        assertEquals(AuctionCategory.HOME, AuctionCategory.fromString("hogar y jardin"));
+        assertEquals(AuctionCategory.VEHICLES, AuctionCategory.fromString("Vehículos"));
+        assertEquals(AuctionCategory.COLLECTIBLES, AuctionCategory.fromString("Coleccionables"));
+        assertNull(AuctionCategory.fromString(null));
+        assertNull(AuctionCategory.fromString("   "));
+        assertNull(AuctionCategory.fromString("CATEGORIA_INEXISTENTE"));
     }
 }

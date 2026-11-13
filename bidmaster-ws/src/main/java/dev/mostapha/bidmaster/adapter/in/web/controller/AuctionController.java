@@ -349,10 +349,8 @@ public class AuctionController {
     }
 
     private Auction createAuctionFromDTO(CreateAuctionRequestDTO dto, UUID sellerId) {
-        AuctionCategory category;
-        try {
-            category = AuctionCategory.valueOf(dto.getCategory().toUpperCase());
-        } catch (IllegalArgumentException e) {
+        AuctionCategory category = AuctionCategory.fromString(dto.getCategory());
+        if (category == null) {
             throw new IllegalArgumentException("Categoría no válida: " + dto.getCategory());
         }
 
@@ -385,11 +383,11 @@ public class AuctionController {
             auction.setDescription(dto.getDescription());
         }
         if (dto.getCategory() != null) {
-            try {
-                AuctionCategory category = AuctionCategory.valueOf(dto.getCategory().toUpperCase());
-                auction.setCategory(category);
-            } catch (IllegalArgumentException ignored) {
+            AuctionCategory category = AuctionCategory.fromString(dto.getCategory());
+            if (category == null) {
+                throw new IllegalArgumentException("Categoría no válida: " + dto.getCategory());
             }
+            auction.setCategory(category);
         }
         if (dto.getInitialPrice() != null) {
             auction.setInitialPrice(dto.getInitialPrice());
@@ -442,6 +440,7 @@ public class AuctionController {
         dto.setCondition(auction.getCondition());
         dto.setShippingOptions(auction.getShippingOptions());
         dto.setAllowPause(auction.isAllowPause());
+        dto.setPausesUsed(auction.getPausesUsed());
 
         dto.setSellerId(auction.getSellerId());
         if (auction.getSellerId() != null) {
@@ -460,15 +459,21 @@ public class AuctionController {
 
         if (auction.getImages() != null) {
             List<AuctionImageDTO> imageDTOs = auction.getImages().stream()
-                    .map(image -> new AuctionImageDTO(
-                            image.getId(),
-                            image.getUrl(),
-                            image.getDescription(),
-                            image.isPrimary(),
-                            image.getDisplayOrder(),
-                            image.getFilename(),
-                            image.getContentType(),
-                            image.getSize()))
+                    .map(image -> {
+                        String url = image.getUrl();
+                        if (url == null || url.isBlank() || url.contains("/api/images/raw/")) {
+                            url = "/api/images/" + image.getId() + "/raw";
+                        }
+                        return new AuctionImageDTO(
+                                image.getId(),
+                                url,
+                                image.getDescription(),
+                                image.isPrimary(),
+                                image.getDisplayOrder(),
+                                image.getFilename(),
+                                image.getContentType(),
+                                image.getSize());
+                    })
                     .toList();
             dto.setImages(imageDTOs);
         } else {

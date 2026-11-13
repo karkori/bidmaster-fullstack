@@ -40,6 +40,7 @@ public class AuctionResponseDTO {
     private String condition;
     private String shippingOptions;
     private boolean allowPause;
+    private int pausesUsed;
     
     // Datos del vendedor (simplificados)
     private UUID sellerId;
@@ -204,6 +205,14 @@ public class AuctionResponseDTO {
 
     public void setAllowPause(boolean allowPause) {
         this.allowPause = allowPause;
+    }
+
+    public int getPausesUsed() {
+        return pausesUsed;
+    }
+
+    public void setPausesUsed(int pausesUsed) {
+        this.pausesUsed = pausesUsed;
     }
 
     public UUID getSellerId() {

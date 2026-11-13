@@ -51,6 +51,21 @@ export class AuctionService {
     return this.http.post<Auction>(`${this.apiUrl}/${id}/publish`, {});
   }
 
+  // Pausar una subasta activa
+  pauseAuction(id: string): Observable<Auction> {
+    return this.http.post<Auction>(`${this.apiUrl}/${id}/pause`, {});
+  }
+
+  // Reanudar una subasta pausada
+  resumeAuction(id: string): Observable<Auction> {
+    return this.http.post<Auction>(`${this.apiUrl}/${id}/resume`, {});
+  }
+
+  // Cancelar una subasta
+  cancelAuction(id: string): Observable<Auction> {
+    return this.http.post<Auction>(`${this.apiUrl}/${id}/cancel`, {});
+  }
+
   // Eliminar una subasta
   deleteAuction(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);

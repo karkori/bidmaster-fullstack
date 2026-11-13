@@ -43,7 +43,15 @@ export const routes: Routes = [
             loadComponent: () => import('./pages/dashboard/notifications-page/notifications-page.component')
           },
           {
+            path: 'my-auctions',
+            loadComponent: () => import('./pages/dashboard/my-auctions-page/my-auctions-page.component')
+          },
+          {
             path: 'create-auction',
+            loadComponent: () => import('./pages/dashboard/create-auction-page/create-auction-page.component')
+          },
+          {
+            path: 'edit-auction/:id',
             loadComponent: () => import('./pages/dashboard/create-auction-page/create-auction-page.component')
           },
           

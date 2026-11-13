@@ -26,6 +26,8 @@ public class ImageResponseDTO {
     private UUID uploadedBy;
     private String type;
     private UUID referenceId;
+    private boolean primary;
+    private int displayOrder;
     
     public static ImageResponseDTO fromDomain(Image image, String imageUrl, String thumbnailUrl) {
         return ImageResponseDTO.builder()
@@ -40,6 +42,8 @@ public class ImageResponseDTO {
                 .uploadedBy(image.getUploadedBy())
                 .type(image.getType().name())
                 .referenceId(image.getReferenceId())
+                .primary(image.isPrimary())
+                .displayOrder(image.getDisplayOrder())
                 .build();
     }
 }

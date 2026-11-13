@@ -110,6 +110,9 @@ public class AuctionService implements AuctionUseCase {
         if (auctionDetails.getMinBidIncrement() != null) {
             existingAuction.setMinBidIncrement(auctionDetails.getMinBidIncrement());
         }
+        if (auctionDetails.getDepositRequired() != null) {
+            existingAuction.setDepositRequired(auctionDetails.getDepositRequired());
+        }
         if (auctionDetails.getEndDate() != null) {
             existingAuction.setEndDate(auctionDetails.getEndDate());
         }
@@ -119,6 +122,7 @@ public class AuctionService implements AuctionUseCase {
         if (auctionDetails.getShippingOptions() != null) {
             existingAuction.setShippingOptions(auctionDetails.getShippingOptions());
         }
+        existingAuction.setAllowPause(auctionDetails.isAllowPause());
 
         return attachImages(auctionRepository.save(existingAuction));
     }

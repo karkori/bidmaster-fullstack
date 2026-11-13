@@ -3,28 +3,38 @@
     <div class="relative h-40 overflow-hidden bg-gray-100">
       <img [src]="imageUrl()" [alt]="auction().title" class="w-full h-full object-cover">
 
-      <!-- Badge de estado -->
       @if (auction().status) {
         <div class="absolute top-2 right-2">
-          @if (auction().status === 'ACTIVE') {
-            <span class="px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded-full">
-              Activa
-            </span>
-          }
-          @if (auction().status === 'COMPLETED') {
-            <span class="px-2 py-1 text-xs font-semibold bg-gray-100 text-gray-800 rounded-full">
-              Finalizada
-            </span>
-          }
-          @if (auction().status === 'DRAFT') {
-            <span class="px-2 py-1 text-xs font-semibold bg-blue-100 text-blue-800 rounded-full">
-              Borrador
-            </span>
+          @switch (auction().status) {
+            @case ('ACTIVE') {
+              <span class="px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded-full">
+                Activa
+              </span>
+            }
+            @case ('DRAFT') {
+              <span class="px-2 py-1 text-xs font-semibold bg-blue-100 text-blue-800 rounded-full">
+                Borrador
+              </span>
+            }
+            @case ('PAUSED') {
+              <span class="px-2 py-1 text-xs font-semibold bg-amber-100 text-amber-800 rounded-full">
+                Pausada
+              </span>
+            }
+            @case ('FINISHED') {
+              <span class="px-2 py-1 text-xs font-semibold bg-gray-100 text-gray-800 rounded-full">
+                Finalizada
+              </span>
+            }
+            @case ('CANCELLED') {
+              <span class="px-2 py-1 text-xs font-semibold bg-red-100 text-red-800 rounded-full">
+                Cancelada
+              </span>
+            }
           }
         </div>
       }
 
-      <!-- Badge de tiempo restante -->
       <div class="absolute bottom-2 left-2">
         <span class="px-2 py-1 text-xs font-semibold bg-black bg-opacity-70 text-white rounded-full">
           {{ timeLeft() }}

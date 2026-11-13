@@ -7,6 +7,7 @@ export interface Auction {
   initialPrice: number;
   currentPrice?: number;
   minBidIncrement?: number;
+  depositRequired?: number;
   startDate?: Date;
   endDate: Date;
   status?: string;
@@ -15,6 +16,7 @@ export interface Auction {
   condition: string;
   shippingOptions: string;
   allowPause?: boolean;
+  pausesUsed?: number;
   sellerId?: string;
   sellerUsername?: string;
   winnerId?: string;
@@ -26,33 +28,52 @@ export interface Auction {
 }
 
 export interface AuctionImage {
-  id:           string;
-  url:          string;
-  description:  null;
+  id: string;
+  url: string;
+  description: string | null;
   displayOrder: number;
-  fileName:     string;
-  contentType:  string;
-  fileSize:     number;
-  primary:      boolean;
+  fileName: string;
+  contentType: string;
+  fileSize: number;
+  primary: boolean;
 }
 
-// export interface AuctionImage {
-//   id?: string;
-//   auctionId?: string;
-//   url: string;
-//   description?: string;
-//   isPrimary: boolean;
-//   displayOrder?: number;
-// }
+export type ImageType = 'AUCTION' | 'PROFILE' | 'CATEGORY' | 'GENERAL';
+
+export interface ImageUploadOptions {
+  isPrimary?: boolean;
+  displayOrder?: number;
+  userId?: string;
+}
+
+export interface ReorderImagesRequest {
+  imageIds: string[];
+}
+
+export interface ImageResponse {
+  id: string;
+  filename: string;
+  originalFilename: string;
+  contentType: string;
+  size: number;
+  imageUrl: string;
+  thumbnailUrl?: string;
+  uploadDate: string;
+  uploadedBy: string;
+  type: ImageType;
+  referenceId?: string;
+  primary: boolean;
+  displayOrder: number;
+}
 
 export interface CreateAuctionDto {
   title: string;
   description: string;
   category: string;
   initialPrice: number;
-  reservePrice?: number;
   endDate: string;
   minBidIncrement?: number;
+  depositRequired?: number;
   condition: string;
   shippingOptions: string;
   allowPause?: boolean;
